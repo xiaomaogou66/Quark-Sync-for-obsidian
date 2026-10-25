@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest'
+import { beforeAll, describe, expect, it, vi } from 'vitest'
 import type { RemoteEntry, RemoteFs } from '~/remote/remote-fs.interface'
 
 const kvStore = new Map<string, unknown>()
@@ -17,6 +17,13 @@ vi.mock('~/storage', () => ({
 }))
 
 import { ResumableRemoteTraversal } from './traverse-remote'
+
+// `sleep()` relies on `window.setTimeout` (Obsidian runs in a browser context).
+beforeAll(() => {
+	if (typeof globalThis.window === 'undefined') {
+		vi.stubGlobal('window', globalThis)
+	}
+})
 
 const normalizeKey = (path: string) =>
 	path.length > 1 && path.endsWith('/') ? path.slice(0, -1) : path
@@ -141,5 +148,106 @@ describe('ResumableRemoteTraversal', () => {
 			maxRetries: 1,
 		})
 		await expect(traversal.traverse()).rejects.toThrow('cancelled')
+	})
+
+	it('walks the same tree with parallel workers', async () => {
+		const tree: Record<string, RemoteEntry[]> = {
+			'/Vault': [
+				entry('/Vault/a.md', false),
+				entry('/Vault/d1', true),
+				entry('/Vault/d2', true),
+				entry('/Vault/d3', true),
+			],
+			'/Vault/d1': [entry('/Vault/d1/x.md', false)],
+			'/Vault/d2': [entry('/Vault/d2/y.md', false)],
+			'/Vault/d3': [entry('/Vault/d3/z', true)],
+			'/Vault/d3/z': [entry('/Vault/d3/z/w.md', false)],
+		}
+		const traversal = new ResumableRemoteTraversal({
+			remote: createRemote(tree),
+			remoteBaseDir: '/Vault',
+			kvKey: 'key-parallel',
+			concurrency: 4,
+			maxRetries: 1,
+		})
+
+		const stats = await traversal.traverse()
+		expect(stats.map((stat) => stat.path).sort()).toEqual([
+			'/Vault/a.md',
+			'/Vault/d1',
+			'/Vault/d1/x.md',
+			'/Vault/d2',
+			'/Vault/d2/y.md',
+			'/Vault/d3',
+			'/Vault/d3/z',
+			'/Vault/d3/z/w.md',
+		])
+	})
+
+	it('fast mode reuses a fresh snapshot without walking', async () => {
+		const list = vi.fn(async () => [entry('/Vault/a.md', false)])
+		const remote: RemoteFs = { ...createRemote({}), list }
+		const first = new ResumableRemoteTraversal({
+			remote,
+			remoteBaseDir: '/Vault',
+			kvKey: 'key-fast',
+			maxRetries: 1,
+		})
+		expect(await first.traverse()).toHaveLength(1)
+		expect(list).toHaveBeenCalledTimes(1)
+
+		list.mockClear()
+		const second = new ResumableRemoteTraversal({
+			remote,
+			remoteBaseDir: '/Vault',
+			kvKey: 'key-fast',
+			fastMode: true,
+			maxRetries: 1,
+		})
+		const reused = await second.traverse()
+		expect(reused.map((stat) => stat.path)).toEqual(['/Vault/a.md'])
+		expect(list).not.toHaveBeenCalled()
+	})
+
+	it('fast mode falls back to a full walk when the snapshot is stale', async () => {
+		kvStore.set('key-stale', {
+			rootCursor: '',
+			queue: [],
+			nodes: { '/Vault': [entry('/Vault/old.md', false)] },
+			fullScanAt: Date.now() - 10 * 60 * 60 * 1000,
+		})
+
+		const list = vi.fn(async () => [entry('/Vault/a.md', false)])
+		const traversal = new ResumableRemoteTraversal({
+			remote: { ...createRemote({}), list },
+			remoteBaseDir: '/Vault',
+			kvKey: 'key-stale',
+			fastMode: true,
+			fullScanIntervalMs: 60 * 60 * 1000,
+			maxRetries: 1,
+		})
+		const stats = await traversal.traverse()
+		expect(list).toHaveBeenCalledTimes(1)
+		expect(stats.map((stat) => stat.path)).toEqual(['/Vault/a.md'])
+	})
+
+	it('does not trust an unfinished snapshot in fast mode', async () => {
+		kvStore.set('key-partial', {
+			rootCursor: '',
+			queue: ['/Vault/d1'],
+			nodes: { '/Vault': [entry('/Vault/a.md', false)] },
+			fullScanAt: Date.now(),
+		})
+
+		const list = vi.fn(async () => [entry('/Vault/a.md', false)])
+		const traversal = new ResumableRemoteTraversal({
+			remote: { ...createRemote({}), list },
+			remoteBaseDir: '/Vault',
+			kvKey: 'key-partial',
+			fastMode: true,
+			maxRetries: 1,
+		})
+		await traversal.traverse()
+		expect(list).toHaveBeenCalledTimes(1)
 	})
 })

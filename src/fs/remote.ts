@@ -41,6 +41,15 @@ export class RemoteFileSystem implements AbstractFileSystem {
 			throwIfCancelled?: () => void
 			/** Skip retries for unit tests. */
 			maxRetries?: number
+			/**
+			 * Traversal tuning: directory listing concurrency and whether the
+			 * persisted remote snapshot may be trusted instead of re-walking.
+			 */
+			traversal?: {
+				concurrency?: number
+				fastMode?: boolean
+				fullScanIntervalMs?: number
+			}
 		},
 	) {}
 
@@ -57,6 +66,9 @@ export class RemoteFileSystem implements AbstractFileSystem {
 			onProgress: this.options.onTraversalProgress,
 			throwIfCancelled: this.options.throwIfCancelled,
 			maxRetries: this.options.maxRetries,
+			concurrency: this.options.traversal?.concurrency,
+			fastMode: this.options.traversal?.fastMode,
+			fullScanIntervalMs: this.options.traversal?.fullScanIntervalMs,
 		})
 		const traversedStats = await traversal.traverse()
 

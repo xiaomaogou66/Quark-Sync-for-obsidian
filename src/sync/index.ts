@@ -136,6 +136,12 @@ export class NutstoreSync {
 				})
 			},
 			throwIfCancelled: () => this.throwIfCancelled(),
+			traversal: {
+				concurrency: plugin.localSettings.remoteConcurrency,
+				fastMode: plugin.localSettings.fastSync,
+				fullScanIntervalMs:
+					(plugin.localSettings.fullScanIntervalHours ?? 24) * 60 * 60 * 1000,
+			},
 		})
 		this.localFS = new LocalVaultFileSystem({
 			vault: this.options.vault,
