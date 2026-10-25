@@ -53,18 +53,12 @@ export default class CommonSettings extends BaseSettings {
 						new Notice(i18n.t('sync.error.accountNotConfigured'))
 						return
 					}
-					new RemoteDirPickerModal(
-						this.app,
-						this.plugin,
-						async (path) => {
-							this.plugin.settings.remoteDir = path
-							await this.plugin.settingsService.saveSettings()
-							new Notice(
-								i18n.t('settings.remoteDirPicker.chosen', { path }),
-							)
-							void this.display()
-						},
-					).open()
+					new RemoteDirPickerModal(this.app, this.plugin, async (path) => {
+						this.plugin.settings.remoteDir = path
+						await this.plugin.settingsService.saveSettings()
+						new Notice(i18n.t('settings.remoteDirPicker.chosen', { path }))
+						void this.display()
+					}).open()
 				})
 		})
 
@@ -104,6 +98,53 @@ export default class CommonSettings extends BaseSettings {
 						} else {
 							syncPolicyDropdown.setValue(prev)
 						}
+					})
+			})
+
+		new Setting(this.containerEl)
+			.setName(i18n.t('settings.fastSync.name'))
+			.setDesc(i18n.t('settings.fastSync.desc'))
+			.addToggle((toggle) => {
+				toggle
+					.setValue(this.plugin.localSettings.fastSync ?? false)
+					.onChange(async (value) => {
+						this.plugin.localSettings.fastSync = value
+						await this.plugin.settingsService.saveLocalSettings()
+					})
+			})
+
+		new Setting(this.containerEl)
+			.setName(i18n.t('settings.fullScanInterval.name'))
+			.setDesc(i18n.t('settings.fullScanInterval.desc'))
+			.addText((text) => {
+				text
+					.setPlaceholder('24')
+					.setValue(
+						String(this.plugin.localSettings.fullScanIntervalHours ?? 24),
+					)
+					.onChange(async (value) => {
+						const hours = Number(value.trim())
+						if (!Number.isFinite(hours) || hours <= 0) {
+							return
+						}
+						this.plugin.localSettings.fullScanIntervalHours = hours
+						await this.plugin.settingsService.saveLocalSettings()
+					})
+			})
+
+		new Setting(this.containerEl)
+			.setName(i18n.t('settings.remoteConcurrency.name'))
+			.setDesc(i18n.t('settings.remoteConcurrency.desc'))
+			.addDropdown((dropdown) => {
+				dropdown
+					.addOption('1', '1')
+					.addOption('2', '2')
+					.addOption('4', '4')
+					.addOption('6', '6')
+					.setValue(String(this.plugin.localSettings.remoteConcurrency ?? 4))
+					.onChange(async (value) => {
+						this.plugin.localSettings.remoteConcurrency = Number(value)
+						await this.plugin.settingsService.saveLocalSettings()
 					})
 			})
 

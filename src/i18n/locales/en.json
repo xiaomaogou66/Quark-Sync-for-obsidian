@@ -484,6 +484,18 @@
 			"name": "Login",
 			"success": "Login successful",
 			"failure": "Login failed, please try again"
+		},
+		"fastSync": {
+			"name": "Fast sync (trust the remote snapshot)",
+			"desc": "Skip the full remote walk on every sync and reuse the snapshot from the last one, turning sync start from one round trip per directory into almost nothing. Trade-off: additions, deletions and renames made from another device are not noticed immediately. Best combined with send-only, plus the full scan interval below."
+		},
+		"fullScanInterval": {
+			"name": "Full scan interval (hours)",
+			"desc": "While fast sync is on, a full remote walk is forced after this many hours so changes made from other devices are still picked up. Empty or 0 means 24 hours."
+		},
+		"remoteConcurrency": {
+			"name": "Remote concurrency",
+			"desc": "How many directory listings run in parallel during the remote walk. Gateways such as OpenList and Alist handle 4 comfortably; drop to 1 on a slow link or when you hit rate limits. Upload and download tasks still run one at a time."
 		}
 	},
 	"aiPermission": {

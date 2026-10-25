@@ -222,6 +222,17 @@ export const DEFAULT_SETTINGS: PluginSettings = {
 			'**/desktop.ini',
 			'**/node_modules',
 			'**/Thumbs.db',
+			// Python / tooling artefacts. A venv alone can be thousands of files and
+			// hundreds of megabytes; syncing it costs a round trip per file.
+			'**/.venv',
+			'**/venv',
+			'**/__pycache__',
+			'**/*.pyc',
+			'**/.pytest_cache',
+			'**/.mypy_cache',
+			'**/.ruff_cache',
+			'**/.ipynb_checkpoints',
+			'**/.mineru_cache',
 		].map(exclude),
 	},
 	skipLargeFiles: {
@@ -246,6 +257,17 @@ export const DEFAULT_SETTINGS: PluginSettings = {
 
 export interface PluginLocalSettings {
 	syncPolicy: SyncPolicy
+	/**
+	 * Trust the persisted remote snapshot instead of re-walking the remote tree.
+	 * There is no change feed for WebDAV/Quark, so this trades remote-change
+	 * detection for sync startup time; a full walk still runs every
+	 * `fullScanIntervalHours`.
+	 */
+	fastSync?: boolean
+	/** How often fast sync falls back to a full remote walk. */
+	fullScanIntervalHours?: number
+	/** Parallel directory listings during the remote walk. */
+	remoteConcurrency?: number
 	ai: {
 		presetModels?: AIProviderDefinitions
 		presetModelsUpdatedAt?: string
@@ -254,6 +276,9 @@ export interface PluginLocalSettings {
 
 export const DEFAULT_LOCAL_SETTINGS: PluginLocalSettings = {
 	syncPolicy: SyncPolicy.TwoWay,
+	fastSync: false,
+	fullScanIntervalHours: 24,
+	remoteConcurrency: 4,
 	ai: {},
 }
 

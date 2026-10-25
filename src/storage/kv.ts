@@ -27,6 +27,11 @@ export interface RemoteTraversalCache {
 	rootCursor: string
 	queue: string[]
 	nodes: Record<string, StatModel[]>
+	/**
+	 * When the last *completed* walk finished. Used by fast sync to decide whether
+	 * the snapshot is still fresh enough to skip re-walking the remote tree.
+	 */
+	fullScanAt?: number
 }
 
 export const remoteTraversalKV = createRecoverableStorage<RemoteTraversalCache>(
