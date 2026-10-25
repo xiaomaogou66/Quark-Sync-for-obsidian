@@ -4,6 +4,8 @@ import './polyfill'
 
 import './assets/styles/global.css'
 
+import './webdav-patch'
+
 import { Menu, normalizePath, Plugin } from 'obsidian'
 import { createSelectedTextContextItem } from './ai/chat/context/user-context'
 import { registerChatboxAiIcon } from './assets/icons/obsidian-nutstore-ai-icon'

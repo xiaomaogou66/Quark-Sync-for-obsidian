@@ -117,6 +117,16 @@
 				"name": "Check WebDAV connection",
 				"desc": "Lists the root folder to verify endpoint and credentials",
 				"button": "Check connection"
+			},
+			"errors": {
+				"missingBaseUrl": "Enter the WebDAV URL first (usually ends with /dav, e.g. http://127.0.0.1:5244/dav)",
+				"invalidUrl": "The WebDAV URL is invalid: {{url}}",
+				"unreachable": "Cannot reach {{url}}: {{message}}. Check that the gateway is running, the port is reachable and the path is right (Alist uses /dav)",
+				"unauthorized": "Authentication rejected (HTTP {{status}}). Check username/password; Alist needs its account password, not a site token",
+				"notFound": "The host answered but the path does not exist (HTTP 404): {{url}}. Alist's WebDAV path is /dav",
+				"notWebdav": "{{url}} is not a WebDAV endpoint (HTTP {{status}}). Point the URL at /dav rather than the web UI",
+				"unexpectedStatus": "The gateway returned an unexpected HTTP {{status}}; check its logs",
+				"clientFailed": "WebDAV answered, but the plugin client failed: {{message}}"
 			}
 		},
 		"quark": {

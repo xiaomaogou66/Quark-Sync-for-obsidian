@@ -72,6 +72,16 @@
 				"name": "检查 WebDAV 连接",
 				"desc": "列出根目录内容，验证地址与账号是否可用",
 				"button": "检查连接"
+			},
+			"errors": {
+				"missingBaseUrl": "请先填写 WebDAV 地址（通常以 /dav 结尾，例如 http://127.0.0.1:5244/dav）",
+				"invalidUrl": "WebDAV 地址格式不正确：{{url}}",
+				"unreachable": "无法连接 {{url}}：{{message}}。请确认网关在运行、端口可访问、地址包含正确的路径（Alist 为 /dav）",
+				"unauthorized": "认证被拒绝（HTTP {{status}}）。请检查用户名与密码；Alist 需使用其账号密码，而不是站点 token",
+				"notFound": "地址存在但路径不存在（HTTP 404）：{{url}}。Alist 的 WebDAV 路径是 /dav，请确认末尾路径正确",
+				"notWebdav": "{{url}} 不是 WebDAV 服务（HTTP {{status}}）。确认地址指向 /dav 而不是网页首页",
+				"unexpectedStatus": "网关返回了意料之外的 HTTP {{status}}，请查看网关日志",
+				"clientFailed": "WebDAV 探测成功，但插件客户端访问失败：{{message}}"
 			}
 		},
 		"quark": {

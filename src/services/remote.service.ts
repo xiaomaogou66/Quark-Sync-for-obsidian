@@ -6,9 +6,13 @@ import { refreshQuarkTokensViaRelay } from '~/remote/quark/token-refresh'
 import type { QuarkCredentials } from '~/remote/quark/quark-client'
 import type { RemoteFs } from '~/remote/remote-fs.interface'
 import { WebDAVRemoteFs } from '~/remote/webdav/webdav-remote-fs'
-import { remoteFidKV } from '~/storage'
-import QuarkSyncPlugin from '../index'
+import { toBase64 } from 'js-base64'
+import type { RequestUrlResponse } from 'obsidian'
 import { createClient } from 'webdav'
+import i18n from '~/i18n'
+import { remoteFidKV } from '~/storage'
+import requestUrl from '~/utils/request-url'
+import QuarkSyncPlugin from '../index'
 import { getRemoteTraversalDBKey } from '../utils/get-db-key'
 import { createRateLimitedWebDAVClient } from '../utils/rate-limited-client'
 import { BaseService } from './service.interface'
@@ -76,13 +80,147 @@ export class RemoteBackendService extends BaseService {
 		const webdav = this.plugin.settings.webdav
 		const baseUrl = webdav.baseUrl.trim()
 		if (!baseUrl) {
-			throw new Error('WebDAV base URL is not configured')
+			throw new Error(i18n.t('settings.webdav.errors.missingBaseUrl'))
 		}
 		const client = createClient(baseUrl, {
 			username: webdav.username.trim(),
 			password: webdav.password,
 		})
 		return new WebDAVRemoteFs(createRateLimitedWebDAVClient(client))
+	}
+
+	/**
+	 * Diagnoses a WebDAV gateway connection step by step.
+	 *
+	 * A raw `exists('/')` failure only surfaces "Invalid response: 404", which
+	 * does not tell the user whether the URL, the path, the credentials or the
+	 * server itself is wrong — so each stage is probed separately.
+	 */
+	async diagnoseWebDavConnection(): Promise<{
+		success: boolean
+		detail?: string
+		error?: Error
+	}> {
+		const webdav = this.plugin.settings.webdav
+		const baseUrl = webdav.baseUrl.trim()
+		if (!baseUrl) {
+			return {
+				success: false,
+				error: new Error(i18n.t('settings.webdav.errors.missingBaseUrl')),
+			}
+		}
+
+		let url: URL
+		try {
+			url = new URL(baseUrl)
+		} catch {
+			return {
+				success: false,
+				error: new Error(
+					i18n.t('settings.webdav.errors.invalidUrl', { url: baseUrl }),
+				),
+			}
+		}
+		if (!url.pathname.endsWith('/')) {
+			url.pathname = `${url.pathname}/`
+		}
+
+		let response: RequestUrlResponse
+		try {
+			response = await requestUrl({
+				url: url.toString(),
+				method: 'PROPFIND',
+				headers: {
+					Depth: '1',
+					Authorization: `Basic ${toBase64(
+						`${webdav.username.trim()}:${webdav.password}`,
+					)}`,
+					'Content-Type': 'application/xml',
+				},
+				body: '<?xml version="1.0" encoding="utf-8"?><propfind xmlns="DAV:"><prop><resourcetype/></prop></propfind>',
+				throw: false,
+			})
+		} catch (error) {
+			return {
+				success: false,
+				error: new Error(
+					i18n.t('settings.webdav.errors.unreachable', {
+						url: url.toString(),
+						message: error instanceof Error ? error.message : String(error),
+					}),
+				),
+			}
+		}
+
+		if (response.status === 401 || response.status === 403) {
+			return {
+				success: false,
+				error: new Error(
+					i18n.t('settings.webdav.errors.unauthorized', {
+						status: response.status,
+					}),
+				),
+			}
+		}
+		if (response.status === 404) {
+			return {
+				success: false,
+				error: new Error(
+					i18n.t('settings.webdav.errors.notFound', { url: url.toString() }),
+				),
+			}
+		}
+		if (response.status === 405 || response.status === 501) {
+			return {
+				success: false,
+				error: new Error(
+					i18n.t('settings.webdav.errors.notWebdav', {
+						status: response.status,
+						url: url.toString(),
+					}),
+				),
+			}
+		}
+		if (response.status !== 207) {
+			return {
+				success: false,
+				error: new Error(
+					i18n.t('settings.webdav.errors.unexpectedStatus', {
+						status: response.status,
+					}),
+				),
+			}
+		}
+		if (!response.text.includes('multistatus')) {
+			return {
+				success: false,
+				error: new Error(
+					i18n.t('settings.webdav.errors.notWebdav', {
+						status: response.status,
+						url: url.toString(),
+					}),
+				),
+			}
+		}
+
+		// WebDAV itself answered; now make sure the plugin's own client works.
+		try {
+			const remote = await this.createWebDavRemoteFs()
+			const entries = await remote.list('/')
+			return {
+				success: true,
+				detail: `${entries.length} item(s) in the root folder`,
+			}
+		} catch (error) {
+			return {
+				success: false,
+				error: new Error(
+					i18n.t('settings.webdav.errors.clientFailed', {
+						message: error instanceof Error ? error.message : String(error),
+					}),
+				),
+			}
+		}
 	}
 
 	/** Stable id of the active backend, used for DB keys and cache namespaces. */
@@ -124,6 +262,9 @@ export class RemoteBackendService extends BaseService {
 		success: boolean
 		detail?: string
 	}> {
+		if (this.plugin.settings.remoteProvider === 'webdav') {
+			return await this.diagnoseWebDavConnection()
+		}
 		try {
 			const remote = await this.createRemoteFs()
 			const entries = await remote.list('/')
