@@ -13,7 +13,7 @@ export default class RealtimeSyncService extends BaseService {
 			return
 		}
 		this.waiting = true
-		await waitUntil(() => this.plugin.isSyncing === false, 500)
+		await waitUntil(() => this.plugin.isSyncing === false, 500, 10_000)
 		this.waiting = false
 		await this.syncExecutor.executeSync({ mode: SyncStartMode.AUTO_SYNC })
 	}

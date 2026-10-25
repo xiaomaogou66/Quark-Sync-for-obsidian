@@ -3,7 +3,6 @@ import type { StatModel } from '~/model/stat.model'
 import { remoteEntryToStatModel } from '~/remote/remote-fs.interface'
 import type { RemoteFs } from '~/remote/remote-fs.interface'
 import { remoteTraversalKV } from '~/storage'
-import { apiLimiter } from './api-limiter'
 import logger from './logger'
 import { stdRemotePath } from './std-remote-path'
 import { isTraversalCacheCompatible } from './traversal-cache-compat'
@@ -24,9 +23,18 @@ import type { MaybePromise } from './types'
  * so the existing remote-cache upload/restore code keeps working unchanged.
  */
 
-const getContents = apiLimiter.wrap((remote: RemoteFs, path: string) =>
-	remote.list(path),
-)
+/**
+ * Directory listing for the traversal.
+ *
+ * Rate limiting deliberately lives in the transport layer (the WebDAV client
+ * proxy built by `createRateLimitedWebDAVClient`, see `rate-limited-client.ts`)
+ * and *only* there. Wrapping this call in `apiLimiter.wrap` as well would nest
+ * two `apiLimiter` jobs: the outer one holds the single concurrency slot
+ * (`maxConcurrent: 1`) while the inner `schedule()` waits for it, so the very
+ * first listing never reaches the network and the sync deadlocks forever with
+ * no request, no error and no timeout.
+ */
+const getContents = (remote: RemoteFs, path: string) => remote.list(path)
 
 const traversalLocks = new Map<string, Mutex>()
 

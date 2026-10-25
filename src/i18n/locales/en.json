@@ -449,7 +449,7 @@
 		"cache": {
 			"title": "Cache management",
 			"clearName": "Clear local cache",
-			"clearDesc": "Delete local cache data stored on this device only. This action cannot be undone and will require rebuilding the cache before the next sync. Your Nutstore data remains intact.",
+			"clearDesc": "Delete local cache data stored on this device only. This action cannot be undone and will require rebuilding the cache before the next sync. Your cloud drive data remains intact.",
 			"clear": "Clear",
 			"confirm": "Confirm clear",
 			"cleared": "Cache cleared successfully",
@@ -560,7 +560,7 @@
 			"failedToAutoMerge": "Failed to auto merge",
 			"failedToUploadMerged": "Failed to upload merged content",
 			"requestsTooFrequent": "Requests too frequent, please wait a few minutes and try again",
-			"accountNotConfigured": "Nutstore account not configured. Please configure your account in settings first."
+			"accountNotConfigured": "No sync account configured. Add your Quark open-platform credentials or a WebDAV gateway in settings first."
 		},
 		"requestsTooFrequent": "Requests too frequent, plugin will resume sync at {{time}}",
 		"preparing": "📋 Preparing sync",
@@ -599,7 +599,7 @@
 		"updatingCache": "Updating local cache...",
 		"failedStatus": "Sync failed",
 		"cancelled": "Sync cancelled",
-		"suggestUseClientForManyTasks": "Tip: When there are many sync tasks, we recommend using the Nutstore client for better performance and stability. The plugin is more suitable for mobile use!",
+		"suggestUseClientForManyTasks": "Tip: With many files the first sync is slow. Run a \"send only\" or \"receive only\" pass first, verify the plan, then switch to two-way sync.",
 		"fileOp": {
 			"createLocalDir": "Create local directory",
 			"createRemoteDir": "Create remote directory",

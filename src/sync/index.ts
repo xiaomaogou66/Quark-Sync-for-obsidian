@@ -167,7 +167,11 @@ export class NutstoreSync {
 		this.currentLogger = createSyncLogger(this.currentLogPrefix)
 		try {
 			const showNotice = mode === SyncStartMode.MANUAL_SYNC
-			this.preparationProgressEnabled = showNotice
+			// Auto syncs run headless, but they still own the same authoritative
+			// `isSyncing` flag: without it the ribbon, the progress modal and the
+			// "stop sync" command keep claiming "no sync in progress" while every
+			// manual attempt is rejected with "sync already running".
+			this.preparationProgressEnabled = true
 			let preparingEmitted = false
 			const emitPreparingOnce = () => {
 				if (preparingEmitted) {
@@ -176,9 +180,7 @@ export class NutstoreSync {
 				emitPreparingSync({ showNotice })
 				preparingEmitted = true
 			}
-			if (showNotice) {
-				emitPreparingOnce()
-			}
+			emitPreparingOnce()
 
 			const remote = this.remote
 			const remoteBaseDir = stdRemotePath(this.options.remoteBaseDir)

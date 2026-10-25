@@ -6,8 +6,12 @@ import { onStopGc } from '~/events/gc-stop'
 import i18n from '~/i18n'
 import { blobKV, syncRecordKV } from '~/storage/kv'
 import logger from '~/utils/logger'
+import waitUntil from '~/utils/wait-until'
 import { BaseService } from './service.interface'
 import type QuarkSyncPlugin from '..'
+
+/** Upper bound for waiting on a running GC run before a sync starts. */
+const GC_IDLE_TIMEOUT_MS = 60_000
 
 export type GcRunResult =
 	| {
@@ -31,11 +35,12 @@ export default class GcService extends BaseService {
 		return this.lock.isLocked()
 	}
 
-	async waitUntilIdle(): Promise<void> {
+	async waitUntilIdle(timeoutMs = GC_IDLE_TIMEOUT_MS): Promise<boolean> {
 		if (!this.lock.isLocked()) {
-			return
+			return true
 		}
-		await this.lock.waitForUnlock()
+		const idle = await waitUntil(() => !this.lock.isLocked(), 200, timeoutMs)
+		return Boolean(idle)
 	}
 
 	async runBlobGc(): Promise<GcRunResult> {

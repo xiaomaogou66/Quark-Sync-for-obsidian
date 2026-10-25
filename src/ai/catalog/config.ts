@@ -171,6 +171,12 @@ let _presetProviders: AIProviderDefinitions | null = null
 function parsePresetProviders(
 	source: unknown,
 ): { success: true; data: AIProviderDefinitions } | { success: false } {
+	// No stored presets is the normal case (fresh install, or a vault that never
+	// customised the model list); it is not a schema violation worth an error log
+	// on every plugin load.
+	if (source === undefined || source === null) {
+		return { success: false }
+	}
 	const parsed = aiProviderDefinitionsSchema.safeParse(source)
 	if (!parsed.success) {
 		logger.error(parsed.error)

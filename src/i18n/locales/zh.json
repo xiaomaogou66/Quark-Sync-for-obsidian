@@ -449,7 +449,7 @@
 		"cache": {
 			"title": "缓存管理",
 			"clearName": "清除本地缓存",
-			"clearDesc": "删除当前设备上的本地缓存数据。此操作无法撤销，会导致下次同步前需要重新建立缓存。仅影响当前设备，不会影响您在坚果云中的数据。",
+			"clearDesc": "删除当前设备上的本地缓存数据。此操作无法撤销，会导致下次同步前需要重新建立缓存。仅影响当前设备，不会影响您在云端网盘中的数据。",
 			"clear": "清除",
 			"confirm": "确认清除",
 			"cleared": "缓存已成功清除",
@@ -560,7 +560,7 @@
 			"failedToAutoMerge": "自动合并失败",
 			"failedToUploadMerged": "上传合并内容失败",
 			"requestsTooFrequent": "请求过于频繁，请等待几分钟后再试",
-			"accountNotConfigured": "尚未配置坚果云账号，请先在设置中配置账号信息"
+			"accountNotConfigured": "尚未配置同步账号，请先在设置中填写夸克开放平台凭据或 WebDAV 网关信息"
 		},
 		"requestsTooFrequent": "请求过于频繁，插件将在 {{time}} 后自动继续同步任务",
 		"preparing": "📋 准备同步",
@@ -599,7 +599,7 @@
 		"updatingCache": "正在更新本地缓存...",
 		"failedStatus": "同步失败",
 		"cancelled": "同步已取消",
-		"suggestUseClientForManyTasks": "提示：当同步任务较多时，建议使用坚果云客户端同步，可获得更好的性能和稳定性，插件更适合在移动端使用！",
+		"suggestUseClientForManyTasks": "提示：同步任务较多时，首次同步会比较慢；建议先用「仅发送」或「仅接收」跑一轮，确认预览无误后再切换到「双向同步」。",
 		"fileOp": {
 			"createLocalDir": "创建本地目录",
 			"createRemoteDir": "创建远程目录",

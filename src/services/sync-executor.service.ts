@@ -18,6 +18,9 @@ export interface SyncOptions {
 	syncPolicy?: SyncPolicy
 }
 
+/** Upper bound for waiting on a leaked `isSyncing` flag before resetting it. */
+const SYNC_STATE_TIMEOUT_MS = 10_000
+
 export default class SyncExecutorService extends BaseService {
 	private inFlight = false
 	private pendingAutoSync = false
@@ -52,7 +55,12 @@ export default class SyncExecutorService extends BaseService {
 					new Notice(i18n.t('sync.stoppingGcForSync'))
 				}
 				emitStopGc()
-				await this.plugin.gcService.waitUntilIdle()
+				const idle = await this.plugin.gcService.waitUntilIdle()
+				if (!idle) {
+					logger.warn(
+						'[Sync] cache GC did not stop in time, starting the sync anyway',
+					)
+				}
 			}
 
 			if (!this.plugin.isAccountConfigured()) {
@@ -93,7 +101,20 @@ export default class SyncExecutorService extends BaseService {
 				configDirSyncMode: this.plugin.settings.configDirSyncMode ?? 'none',
 			})
 
-			await waitUntil(() => this.plugin.isSyncing === false, 500)
+			await waitUntil(
+				() => this.plugin.isSyncing === false,
+				500,
+				SYNC_STATE_TIMEOUT_MS,
+			)
+			if (this.plugin.isSyncing) {
+				// The previous run left the UI flag set (a hung promise, a closed
+				// modal that never resolved, …). Force it clear instead of blocking
+				// every later attempt with "sync already running" until reload.
+				logger.warn(
+					'[Sync] stale isSyncing flag detected, resetting sync state',
+				)
+				this.plugin.toggleSyncUI(false)
+			}
 
 			const remote = await this.plugin.remoteBackendService.createRemoteFs()
 			const sync = new NutstoreSync(this.plugin, {
