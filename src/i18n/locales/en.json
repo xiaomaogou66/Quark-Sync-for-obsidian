@@ -8,16 +8,6 @@
 			"desc": "Select interface language",
 			"auto": "Auto detect"
 		},
-		"account": {
-			"name": "Account",
-			"desc": "Enter your WebDAV account",
-			"placeholder": "Enter your account"
-		},
-		"credential": {
-			"name": "Credential",
-			"desc": "Enter the app password you created in Nutstore (Account info → Security options), not your login password.",
-			"placeholder": "Your Nutstore app password"
-		},
 		"checkConnection": {
 			"name": "Check connection",
 			"desc": "Click to check WebDAV connection",
@@ -28,37 +18,8 @@
 		},
 		"remoteDir": {
 			"name": "Remote directory",
-			"desc": "Which Nutstore folder this vault syncs with. Use the folder button to pick one visually.",
+			"desc": "Which folder inside Quark Drive this vault syncs with. Leave empty to use the vault name; the folder is created under the configured root FID.",
 			"placeholder": "e.g. /MyNotes"
-		},
-		"login": {
-			"name": "Login",
-			"success": "Login successful",
-			"failure": "Login failed, please try again"
-		},
-		"loginMode": {
-			"name": "Login mode",
-			"manual": "Manual input",
-			"sso": "Single sign-on"
-		},
-		"enterpriseBaseUrl": {
-			"name": "Nutstore Enterprise",
-			"desc": "Optional Base URL for Nutstore Enterprise. Leave empty to use the default endpoint. Example: https://dav.jianguoyun.com",
-			"action": "Set",
-			"modalTitle": "Set Nutstore Enterprise Base URL",
-			"placeholder": "For example https://dav.jianguoyun.com",
-			"invalid": "Invalid Base URL",
-			"invalidWithReason": "Invalid Base URL: {{reason}}",
-			"errors": {
-				"invalidFormat": "enter a complete server address, for example: https://dav.jianguoyun.com",
-				"unsupportedProtocol": "the address must start with http:// or https://"
-			}
-		},
-		"ssoStatus": {
-			"loggedIn": "Logged in",
-			"notLoggedIn": "Not logged in",
-			"logout": "Logout",
-			"logoutSuccess": "Logged out successfully"
 		},
 		"backupWarning": {
 			"name": "Backup warning",
@@ -124,16 +85,10 @@
 			"exceedsMax": "Value exceeds maximum limit of {{max}} minutes (1 day), automatically adjusted"
 		},
 		"sections": {
-			"account": "Account",
+			"account": "Quark Drive account",
 			"common": "General",
 			"filters": "Filter rules",
 			"ai": "AI"
-		},
-		"remoteProvider": {
-			"name": "Drive backend",
-			"desc": "Which storage backend to sync with",
-			"nutstore": "Nutstore (WebDAV)",
-			"quark": "Quark Drive (open platform)"
 		},
 		"quark": {
 			"hint": "Quark Drive has no WebDAV endpoint. Create an app on the Quark open platform, then paste its app_id, sign_key and an OAuth token here. Credentials stay on this device.",
@@ -395,9 +350,6 @@
 			"confirm": "Confirm logout",
 			"cancel": "Cancel"
 		},
-		"help": {
-			"name": "How to get WebDAV account and credential?"
-		},
 		"filters": {
 			"name": "Filter rules",
 			"desc": "Choose which files and folders are skipped or forced into sync. Use simple paths or wildcards, e.g. \"图片\" or \"*.tmp\". The last matching rule wins; the Aa switch controls case sensitivity.",
@@ -495,6 +447,11 @@
 			"generateBlobGarbage": "Generate garbage snapshots",
 			"generateBlobGarbageRunning": "Generating garbage snapshots...",
 			"generateBlobGarbageDone": "Generated {{count}} garbage snapshot(s)."
+		},
+		"login": {
+			"name": "Login",
+			"success": "Login successful",
+			"failure": "Login failed, please try again"
 		}
 	},
 	"aiPermission": {
@@ -571,8 +528,7 @@
 			"failedToAutoMerge": "Failed to auto merge",
 			"failedToUploadMerged": "Failed to upload merged content",
 			"requestsTooFrequent": "Requests too frequent, please wait a few minutes and try again",
-			"accountNotConfigured": "Nutstore account not configured. Please configure your account in settings first.",
-			"ssoTokenInvalid": "Login has expired. Please log in again in settings."
+			"accountNotConfigured": "Nutstore account not configured. Please configure your account in settings first."
 		},
 		"requestsTooFrequent": "Requests too frequent, plugin will resume sync at {{time}}",
 		"preparing": "📋 Preparing sync",
@@ -885,17 +841,6 @@
 			"action": "Action",
 			"localPath": "Local Path",
 			"remotePath": "Remote Path"
-		}
-	},
-	"webdavExplorer": {
-		"actions": {
-			"newFolder": "New Folder",
-			"goBack": "Go Back",
-			"confirm": "Confirm",
-			"cancel": "Cancel"
-		},
-		"labels": {
-			"currentPath": "Current Path"
 		}
 	}
 }

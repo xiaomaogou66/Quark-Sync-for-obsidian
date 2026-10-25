@@ -32,9 +32,9 @@ import { SubagentTimelineDialog } from './components/SubagentTimelineDialog'
 import { decideDropRoute, hasDragItems } from './drop-utils'
 import { shouldSubmitChatInput } from './utils'
 
-const INPUT_HEIGHT_STORAGE_KEY = 'nutstore-sync.chatbox.input-height'
+const INPUT_HEIGHT_STORAGE_KEY = 'quark-sync.chatbox.input-height'
 const LEGACY_INPUT_HEIGHT_STORAGE_KEY =
-	'nutstore-sync.chatbox.desktop-input-height'
+	'quark-sync.chatbox.desktop-input-height'
 const DEFAULT_INPUT_HEIGHT = 184
 const DEFAULT_COMPACT_INPUT_HEIGHT = 144
 const INPUT_MIN_HEIGHT = 128

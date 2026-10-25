@@ -1,15 +1,17 @@
 import { Vault } from 'obsidian'
 import type { RemoteFs } from '~/remote/remote-fs.interface'
-import type { NutstoreSettings } from '~/settings'
+import type { PluginSettings } from '~/settings'
 import {
 	ConfigDirSyncMode,
 	computeEffectiveFilterRulesFromParts,
 } from '~/utils/config-dir-rules'
-import { getTraversalWebDAVDBKey } from '~/utils/get-db-key'
+import { getRemoteTraversalDBKey } from '~/utils/get-db-key'
 import { GlobFilterRule } from '~/utils/glob-match'
-import { getRemoteBackendEndpoint } from '~/utils/remote-endpoints'
-import { ResumableRemoteTraversal } from '~/utils/traverse-remote'
-import type { WebDAVTraversalProgress } from '~/utils/traverse-webdav'
+import {
+	ResumableRemoteTraversal,
+	type RemoteTraversalProgress,
+} from '~/utils/traverse-remote'
+import { QUARK_API_BASE } from '~/remote/quark/constants'
 import AbstractFileSystem from './fs.interface'
 import { buildRemoteWalkResults } from './utils/build-remote-walk-results'
 
@@ -24,7 +26,7 @@ export class RemoteFileSystem implements AbstractFileSystem {
 		private options: {
 			remote: RemoteFs
 			vault: Vault
-			settings: NutstoreSettings
+			settings: PluginSettings
 			remoteAccountId: string
 			remoteBaseDir: string
 			filterRules?: {
@@ -32,7 +34,7 @@ export class RemoteFileSystem implements AbstractFileSystem {
 				configDir?: string
 				configDirSyncMode?: ConfigDirSyncMode
 			}
-			onTraversalProgress?: (progress: WebDAVTraversalProgress) => void
+			onTraversalProgress?: (progress: RemoteTraversalProgress) => void
 			throwIfCancelled?: () => void
 			/** Skip retries for unit tests. */
 			maxRetries?: number
@@ -43,9 +45,9 @@ export class RemoteFileSystem implements AbstractFileSystem {
 		const traversal = new ResumableRemoteTraversal({
 			remote: this.options.remote,
 			remoteBaseDir: this.options.remoteBaseDir,
-			kvKey: await getTraversalWebDAVDBKey(
+			kvKey: await getRemoteTraversalDBKey(
 				this.options.remoteAccountId,
-				getRemoteBackendEndpoint(this.options.settings),
+				QUARK_API_BASE,
 				this.options.remoteBaseDir,
 			),
 			saveInterval: 1,

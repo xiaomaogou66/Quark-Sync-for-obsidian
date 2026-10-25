@@ -13,14 +13,14 @@ import {
 	DEFAULT_LOCAL_SETTINGS,
 	DEFAULT_SETTINGS,
 	migrateQuarkSettings,
-	type NutstoreLocalSettings,
-	type NutstoreSettings,
+	type PluginLocalSettings,
+	type PluginSettings,
 } from '~/settings'
 import { ConflictStrategy } from '~/sync/tasks/conflict-resolve.task'
 import { DEFAULT_MOBILE_APP_DOWNLOAD_FILE_CHUNK_SIZE } from '~/utils/download-chunk-size'
 import { migrateLegacyFilterRules } from '~/utils/glob-match'
 import logger from '~/utils/logger'
-import type NutstorePlugin from '..'
+import type QuarkSyncPlugin from '..'
 import { BaseService } from './service.interface'
 
 export default class SettingsService extends BaseService {
@@ -29,7 +29,7 @@ export default class SettingsService extends BaseService {
 		void this.reloadSettingsFromDisk()
 	}, 500)
 
-	constructor(private plugin: NutstorePlugin) {
+	constructor(private plugin: QuarkSyncPlugin) {
 		super()
 	}
 
@@ -48,7 +48,7 @@ export default class SettingsService extends BaseService {
 		const loadedSettings = (await this.plugin.loadData()) as unknown
 		const storedSettings =
 			loadedSettings && typeof loadedSettings === 'object'
-				? (loadedSettings as Partial<NutstoreSettings>)
+				? (loadedSettings as Partial<PluginSettings>)
 				: {}
 		this.plugin.settings = Object.assign({}, DEFAULT_SETTINGS, storedSettings)
 		this.plugin.settings.quark = migrateQuarkSettings(storedSettings.quark)
@@ -155,7 +155,7 @@ export default class SettingsService extends BaseService {
 				{},
 				DEFAULT_LOCAL_SETTINGS,
 				JSON.parse(raw),
-			) as NutstoreLocalSettings
+			) as PluginLocalSettings
 			this.plugin.localSettings.ai ??= {}
 		} catch {
 			this.plugin.localSettings = { ...DEFAULT_LOCAL_SETTINGS }

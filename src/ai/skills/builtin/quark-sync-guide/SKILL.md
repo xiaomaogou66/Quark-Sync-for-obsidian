@@ -1,11 +1,11 @@
 ---
-name: nutstore-sync-guide
-description: Explain and operate Nutstore Sync features—including syncing, plugin settings, AI ChatBox, and MCP server configuration—when users ask for plugin help, setup, or troubleshooting.
+name: quark-sync-guide
+description: Explain and operate Quark Sync features—including syncing, plugin settings, AI ChatBox, and MCP server configuration—when users ask for plugin help, setup, or troubleshooting.
 ---
 
-# Nutstore Sync Guide
+# Quark Sync Guide
 
-Answer questions about the Nutstore Sync plugin and support the MCP server
+Answer questions about the Quark Sync plugin and support the MCP server
 configuration workflow.
 
 ## Stay within documented behavior

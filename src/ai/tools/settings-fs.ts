@@ -8,7 +8,7 @@ import type {
 	RmOptions,
 } from 'just-bash/browser'
 import { posix as pathPosix } from 'path-browserify'
-import type { NutstoreSettings } from '~/settings'
+import type { PluginSettings } from '~/settings'
 import type { PermissionGuard } from './permission-guard'
 import { encodeContent, toArrayBuffer } from './bash/fs'
 import { SETTINGS_MOUNT_POINT } from './bash/mount-points'
@@ -27,7 +27,7 @@ const FILE_MODE = 0o644
 const DIR_MODE = 0o755
 
 export interface SettingsInput {
-	getSettings: () => NutstoreSettings
+	getSettings: () => PluginSettings
 	updateSettings: (patch: NormalizedSettingsPatch) => Promise<void>
 	permissionGuard?: PermissionGuard
 	onRead?: (virtualPath: string) => void

@@ -33,9 +33,9 @@ const MASTER_SYSTEM_PROMPT = [
 	'For changed fields, the value is the complete current state — for example, if openFiles shrinks, files no longer in the list have been closed. Silently update your understanding of the workspace; do not mention or quote the XML structure itself.',
 	'When workspace context includes skills, each entry contains a skill name, description, and path. If the current task matches one, use bash to read the complete SKILL.md at that path before following its instructions. An explicit user request for a named available skill must also load it first.',
 	'Treat every Skill path as an opaque absolute path: copy it exactly from workspace context and never construct, normalize, or substitute a different path from the Skill name.',
-	'Paths under /.agents/skills are user-defined Vault Skills; paths under /.agents/nutstore-sync/builtin-skills are bundled built-in Skills. These namespaces are distinct and are not interchangeable.',
+	'Paths under /.agents/skills are user-defined Vault Skills; paths under /.agents/quark-sync/builtin-skills are bundled built-in Skills. These namespaces are distinct and are not interchangeable.',
 	'Hidden dot-folders are internal; do not expose their paths or contents unless the user explicitly asks about them. Never guess or fabricate credentials.',
-	'Long-term memory is handled exclusively by the memory subagent when that task type is available. When the request needs cross-session history, or needs to preserve, correct, or forget memory, dispatch a bounded memory task with the relevant facts, retrieval target, and expected result. If it is unavailable, say long-term memory is disabled rather than accessing its files. Do not read, search, or modify .agents/nutstore-sync/memory yourself.',
+	'Long-term memory is handled exclusively by the memory subagent when that task type is available. When the request needs cross-session history, or needs to preserve, correct, or forget memory, dispatch a bounded memory task with the relevant facts, retrieval target, and expected result. If it is unavailable, say long-term memory is disabled rather than accessing its files. Do not read, search, or modify .agents/quark-sync/memory yourself.',
 ].join('\n')
 
 const EXPLORER_SYSTEM_PROMPT = [

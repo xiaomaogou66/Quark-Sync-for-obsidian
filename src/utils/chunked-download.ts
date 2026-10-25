@@ -92,7 +92,7 @@ async function downloadRemoteFileInChunks({
 		mobileAppDownloadFileChunkSize,
 	)
 	const tempPath = normalizePath(
-		`${normalizedLocalPath}.nutstore-sync-${Date.now()}-${Math.random()
+		`${normalizedLocalPath}.quark-sync-${Date.now()}-${Math.random()
 			.toString(36)
 			.slice(2)}.download`,
 	)

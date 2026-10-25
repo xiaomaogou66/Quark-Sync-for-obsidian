@@ -1,11 +1,9 @@
 import 'blob-polyfill'
 
 import './polyfill'
-import './webdav-patch'
 
 import './assets/styles/global.css'
 
-import { toBase64 } from 'js-base64'
 import { Menu, normalizePath, Plugin } from 'obsidian'
 import { createSelectedTextContextItem } from './ai/chat/context/user-context'
 import { registerChatboxAiIcon } from './assets/icons/obsidian-nutstore-ai-icon'
@@ -30,22 +28,21 @@ import { BaseService } from './services/service.interface'
 import SettingsService from './services/settings.service'
 import { StatusService } from './services/status.service'
 import SyncExecutorService from './services/sync-executor.service'
-import { WebDAVService } from './services/webdav.service'
+import { RemoteBackendService } from './services/remote.service'
 import {
-	NutstoreLocalSettings,
-	NutstoreSettings,
-	NutstoreSettingTab,
+	PluginLocalSettings,
+	PluginSettings,
+	QuarkSyncSettingTab,
 } from './settings'
-import { decryptOAuthResponse } from './utils/decrypt-ticket-response'
 import { stdRemotePath } from './utils/std-remote-path'
 import ChatboxView, { CHATBOX_VIEW_TYPE } from './views/chatbox.view'
 
-export default class NutstorePlugin extends Plugin {
-	declare public settings: NutstoreSettings
+export default class QuarkSyncPlugin extends Plugin {
+	declare public settings: PluginSettings
 
 	public isSyncing: boolean = false
-	public localSettings!: NutstoreLocalSettings
-	public settingTab!: NutstoreSettingTab
+	public localSettings!: PluginLocalSettings
+	public settingTab!: QuarkSyncSettingTab
 
 	public commandService = new CommandService(this)
 	public eventsService = new EventsService(this)
@@ -54,11 +51,11 @@ export default class NutstorePlugin extends Plugin {
 	public mcpService = new McpService(this)
 	public modelsPresetService = new ModelsPresetService(this)
 	public nutstoreLlmGatewayService = new NutstoreLlmGatewayService(this)
-	public protocolService = new ProtocolService(this)
 	public progressService = new ProgressService(this)
+	public protocolService = new ProtocolService(this)
 	public ribbonService = new SyncRibbonManager(this)
 	public statusService = new StatusService(this)
-	public webDAVService = new WebDAVService(this)
+	public remoteBackendService = new RemoteBackendService(this)
 	public settingsService = new SettingsService(this)
 	public syncExecutorService = new SyncExecutorService(this)
 	public gcService = new GcService(this)
@@ -78,17 +75,17 @@ export default class NutstorePlugin extends Plugin {
 			this.loggerService,
 			this.modelsPresetService,
 			this.nutstoreLlmGatewayService,
-			this.webDAVService,
+			this.remoteBackendService,
 			this.syncExecutorService,
 			this.gcService,
 			this.settingsService,
 			this.i18nService,
 			this.statusService,
 			this.progressService,
+			this.protocolService,
 			this.eventsService,
 			this.commandService,
 			this.ribbonService,
-			this.protocolService,
 			this.realtimeSyncService,
 			this.mcpService,
 			this.chatService,
@@ -102,7 +99,7 @@ export default class NutstorePlugin extends Plugin {
 		for (const service of this.services) {
 			await service.onload()
 		}
-		this.settingTab = new NutstoreSettingTab(this.app, this)
+		this.settingTab = new QuarkSyncSettingTab(this.app, this)
 		this.addSettingTab(this.settingTab)
 		this.registerView(CHATBOX_VIEW_TYPE, (leaf) => new ChatboxView(leaf, this))
 		this.registerEvent(
@@ -111,7 +108,7 @@ export default class NutstorePlugin extends Plugin {
 				menu.addItem((item) => {
 					item
 						.setTitle(
-							i18n.language.startsWith('zh') ? '坚果云同步' : 'Nutstore Sync',
+							i18n.language.startsWith('zh') ? '夸克网盘同步' : 'Nutstore Sync',
 						)
 						.setIcon('cloud')
 					item.setSubmenu()
@@ -165,68 +162,20 @@ export default class NutstorePlugin extends Plugin {
 		this.ribbonService.update()
 	}
 
-	async getDecryptedOAuthInfo() {
-		return decryptOAuthResponse(this.settings.oauthResponseText)
-	}
-
-	async getToken() {
-		if (this.settings.remoteProvider === 'quark') {
-			// Quark authenticates through its own open-platform token headers, no
-			// Basic-Auth string is needed by the backend.
-			return toBase64(this.settings.quark.accessToken.trim())
-		}
-		let token
-		if (this.settings.loginMode === 'sso') {
-			let oauth
-			try {
-				oauth = await this.getDecryptedOAuthInfo()
-			} catch {
-				throw new Error(i18n.t('sync.error.ssoTokenInvalid'))
-			}
-			token = `${oauth.username}:${oauth.access_token}`
-		} else {
-			token = `${this.settings.account}:${this.settings.credential}`
-		}
-		return toBase64(token)
-	}
-
 	async getRemoteAccountId() {
-		if (this.settings.remoteProvider === 'quark') {
-			const quark = this.settings.quark
-			return (quark.userId.trim() || quark.appId.trim()).trim()
-		}
-		if (this.settings.loginMode === 'sso') {
-			return (await this.getDecryptedOAuthInfo()).username.trim()
-		}
-		return this.settings.account.trim()
+		const quark = this.settings.quark
+		return (quark.userId.trim() || quark.appId.trim()).trim()
 	}
 
 	/**
-	 * 检查账号配置是否完整
+	 * 检查夸克网盘凭据是否完整
 	 * @returns true 表示配置完整，false 表示未配置或配置不完整
 	 */
 	isAccountConfigured(): boolean {
-		if (this.settings.remoteProvider === 'quark') {
-			const quark = this.settings.quark
-			return [quark.appId, quark.signKey, quark.accessToken].every(
-				(value) => value.trim() !== '',
-			)
-		}
-		if (this.settings.loginMode === 'sso') {
-			// SSO 模式：检查是否有 OAuth 响应数据
-			return (
-				!!this.settings.oauthResponseText &&
-				this.settings.oauthResponseText.trim() !== ''
-			)
-		} else {
-			// 手动模式：检查账号和凭证是否都已填写
-			return (
-				!!this.settings.account &&
-				this.settings.account.trim() !== '' &&
-				!!this.settings.credential &&
-				this.settings.credential.trim() !== ''
-			)
-		}
+		const quark = this.settings.quark
+		return [quark.appId, quark.signKey, quark.accessToken].every(
+			(value) => value.trim() !== '',
+		)
 	}
 
 	get remoteBaseDir() {

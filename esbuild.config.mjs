@@ -29,10 +29,6 @@ const buildOptions = {
 		'@lezer/lr',
 	],
 	define: {
-		'process.env.NS_NSDAV_ENDPOINT': JSON.stringify(
-			process.env.NS_NSDAV_ENDPOINT,
-		),
-		'process.env.NS_DAV_ENDPOINT': JSON.stringify(process.env.NS_DAV_ENDPOINT),
 		'process.env.LLM_GATEWAY_CLIENT_ID': JSON.stringify(
 			process.env.LLM_GATEWAY_CLIENT_ID || '',
 		),

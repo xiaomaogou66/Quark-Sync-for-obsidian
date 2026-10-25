@@ -4,7 +4,7 @@ import { createVaultPathContextItem } from '~/ai/chat/context/user-context'
 import i18n from '~/i18n'
 import { countMergeConflictBlocks } from '~/utils/merge-conflict-markers'
 import logger from '~/utils/logger'
-import type NutstorePlugin from '..'
+import type QuarkSyncPlugin from '..'
 import { BaseService } from './service.interface'
 
 export default class AIConflictResolverService extends BaseService {
@@ -12,7 +12,7 @@ export default class AIConflictResolverService extends BaseService {
 	private refreshVersion = 0
 	private unloaded = false
 
-	constructor(private plugin: NutstorePlugin) {
+	constructor(private plugin: QuarkSyncPlugin) {
 		super()
 	}
 

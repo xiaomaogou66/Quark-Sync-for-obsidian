@@ -8,10 +8,10 @@ import { SyncStartMode } from '~/sync'
 import logger from '~/utils/logger'
 import { CHATBOX_VIEW_TYPE } from '~/views/chatbox.view'
 import { BaseService } from './service.interface'
-import NutstorePlugin from '..'
+import QuarkSyncPlugin from '..'
 
 export default class CommandService extends BaseService {
-	constructor(private plugin: NutstorePlugin) {
+	constructor(private plugin: QuarkSyncPlugin) {
 		super()
 	}
 

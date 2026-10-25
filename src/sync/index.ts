@@ -19,7 +19,6 @@ import {
 } from '~/events'
 import IFileSystem from '~/fs/fs.interface'
 import { LocalVaultFileSystem } from '~/fs/local-vault'
-import { NutstoreFileSystem } from '~/fs/nutstore'
 import { RemoteFileSystem } from '~/fs/remote'
 import type { RemoteFs } from '~/remote/remote-fs.interface'
 import i18n from '~/i18n'
@@ -37,14 +36,10 @@ import { computeEffectiveFilterRules } from '~/utils/config-dir-rules'
 import { getDBKey } from '~/utils/get-db-key'
 import getTaskName from '~/utils/get-task-name'
 import { is503Error } from '~/utils/is-503-error'
-import {
-	getNutstoreDavEndpoint,
-	getNutstoreNsdavEndpoint,
-} from '~/utils/nutstore-endpoints'
 import { statVaultItem } from '~/utils/stat-vault-item'
-import type { WebDAVTraversalProgress } from '~/utils/traverse-webdav'
+import type { RemoteTraversalProgress } from '~/utils/traverse-remote'
 import { stdRemotePath } from '~/utils/std-remote-path'
-import NutstorePlugin from '..'
+import QuarkSyncPlugin from '..'
 import ReceiveOnlySyncDecider, {
 	ReceiveOnlyRevertLocalChangesSyncDecider,
 } from './decision/receive-only.decider'
@@ -114,11 +109,9 @@ export class NutstoreSync {
 	private currentLogger: SyncLogger = createSyncLogger(this.currentLogPrefix)
 
 	constructor(
-		private plugin: NutstorePlugin,
+		private plugin: QuarkSyncPlugin,
 		private options: {
 			vault: Vault
-			/** Nutstore-only credential; empty for path/fid addressed backends. */
-			token: string
 			remoteAccountId: string
 			remoteBaseDir: string
 			remote: RemoteFs
@@ -126,13 +119,14 @@ export class NutstoreSync {
 	) {
 		this.options = Object.freeze(this.options)
 		const filterRules = computeEffectiveFilterRules(plugin)
-		const remoteFsOptions = {
+		this.remoteFs = new RemoteFileSystem({
 			vault: this.options.vault,
 			settings: plugin.settings,
+			remote: this.options.remote,
 			remoteAccountId: this.options.remoteAccountId,
 			remoteBaseDir: this.options.remoteBaseDir,
 			filterRules,
-			onTraversalProgress: (traversal: WebDAVTraversalProgress) => {
+			onTraversalProgress: (traversal: RemoteTraversalProgress) => {
 				this.emitPreparationProgress({
 					phase:
 						traversal.phase === 'complete' ? 'analyzing' : 'traversingRemote',
@@ -140,17 +134,7 @@ export class NutstoreSync {
 				})
 			},
 			throwIfCancelled: () => this.throwIfCancelled(),
-		}
-		this.remoteFs =
-			this.options.remote.kind === 'webdav'
-				? new NutstoreFileSystem({
-						...remoteFsOptions,
-						token: this.options.token,
-					})
-				: new RemoteFileSystem({
-						...remoteFsOptions,
-						remote: this.options.remote,
-					})
+		})
 		this.localFS = new LocalVaultFileSystem({
 			vault: this.options.vault,
 			syncRecord: new SyncRecord(
@@ -194,14 +178,10 @@ export class NutstoreSync {
 				emitPreparingOnce()
 			}
 
-			const settings = this.settings
 			const remote = this.remote
 			const remoteBaseDir = stdRemotePath(this.options.remoteBaseDir)
 			this.logger.info('[Sync] Endpoint:', {
 				backend: remote.kind,
-				loginMode: settings.loginMode,
-				dav: getNutstoreDavEndpoint(settings),
-				nsdav: getNutstoreNsdavEndpoint(settings),
 				remoteBaseDir,
 			})
 			await remote.init?.()
@@ -332,7 +312,7 @@ export class NutstoreSync {
 
 			if (
 				showNotice &&
-				settings.confirmBeforeSync &&
+				this.settings.confirmBeforeSync &&
 				firstTaskIdxNeedingConfirmation > -1
 			) {
 				this.plugin.progressService.closeProgressModal()
@@ -356,7 +336,7 @@ export class NutstoreSync {
 			// Check for RemoveLocalTask during auto-sync and ask for confirmation
 			if (
 				mode === SyncStartMode.AUTO_SYNC &&
-				settings.confirmBeforeDeleteInAutoSync
+				this.settings.confirmBeforeDeleteInAutoSync
 			) {
 				const removeLocalTasks = confirmedTasks.filter(
 					(t) => t instanceof RemoveLocalTask,

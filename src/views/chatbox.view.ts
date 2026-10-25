@@ -24,7 +24,7 @@ import {
 import type { ChatboxController, ChatboxProps } from '~/ai/chat/ui/types'
 import i18n from '~/i18n'
 import logger from '~/utils/logger'
-import type NutstorePlugin from '..'
+import type QuarkSyncPlugin from '..'
 import {
 	hideChatboxSelectionHighlight,
 	showChatboxSelectionHighlight,
@@ -36,7 +36,7 @@ import {
 } from './markdown-link-handler'
 import { mountChatbox } from '../components/solid-js'
 
-export const CHATBOX_VIEW_TYPE = 'nutstore-sync-chatbox'
+export const CHATBOX_VIEW_TYPE = 'quark-sync-chatbox'
 
 function normalizeDroppedVaultPath(path: string): string | null {
 	let value = path.trim()
@@ -160,7 +160,7 @@ export default class ChatboxView extends ItemView {
 
 	constructor(
 		leaf: WorkspaceLeaf,
-		private plugin: NutstorePlugin,
+		private plugin: QuarkSyncPlugin,
 	) {
 		super(leaf)
 		this.registerEvent(
@@ -499,7 +499,7 @@ export default class ChatboxView extends ItemView {
 	async onOpen() {
 		this.contentEl.empty()
 		this.rootEl = this.contentEl.createDiv({
-			cls: ':uno: nutstore-chatbox-view h-full',
+			cls: ':uno: quark-chatbox-view h-full',
 		})
 		this.captureActiveContextSnapshot(true)
 		this.plugin.chatService.setChatModalHost(this.rootEl)

@@ -1,5 +1,5 @@
 import { Vault } from 'obsidian'
-import type { NutstoreSettings } from '~/settings'
+import type { PluginSettings } from '~/settings'
 import { SyncRecord } from '~/storage/sync-record'
 import {
 	ConfigDirSyncMode,
@@ -25,7 +25,7 @@ export class LocalVaultFileSystem implements AbstractFileSystem {
 				configDir?: string
 				configDirSyncMode?: ConfigDirSyncMode
 			}
-			settings?: NutstoreSettings
+			settings?: PluginSettings
 		},
 	) {}
 

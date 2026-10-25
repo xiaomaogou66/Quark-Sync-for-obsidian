@@ -47,11 +47,11 @@ describe('resolveMarkdownLinkAction', () => {
 	it('extracts the provider id from the provider editor protocol', () => {
 		expect(
 			resolveMarkdownLinkAction({
-				href: 'obsidian://nutstore-sync/modal/provider-edit?providerId=openai%20compatible',
+				href: 'obsidian://quark-sync/modal/provider-edit?providerId=openai%20compatible',
 			}),
 		).toEqual({
 			type: 'protocol',
-			href: 'obsidian://nutstore-sync/modal/provider-edit?providerId=openai%20compatible',
+			href: 'obsidian://quark-sync/modal/provider-edit?providerId=openai%20compatible',
 			providerId: 'openai compatible',
 		})
 	})

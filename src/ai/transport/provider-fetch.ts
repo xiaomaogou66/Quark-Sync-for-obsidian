@@ -15,7 +15,7 @@ function isNetworkDisconnected(error: unknown) {
 }
 
 function buildDisableCorsLink(providerId: string) {
-	return `obsidian://nutstore-sync/modal/provider-edit?providerId=${encodeURIComponent(providerId)}`
+	return `obsidian://quark-sync/modal/provider-edit?providerId=${encodeURIComponent(providerId)}`
 }
 
 export function createProviderFetch(provider: AIProviderConfig): typeof fetch {

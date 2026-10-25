@@ -4,14 +4,14 @@ import { normalize } from 'path-browserify'
 import superjson from 'superjson'
 import {
 	cacheUploadMetaKV,
-	traverseWebDAVKV,
-	type TraverseWebDAVCache,
+	remoteTraversalKV,
+	type RemoteTraversalCache,
 } from '~/storage'
 import type { SyncLogger } from '~/sync/log'
 import { shouldUseRemoteTraversalCache } from '~/utils/config-dir-rules'
-import { getTraversalWebDAVDBKey } from '~/utils/get-db-key'
+import { getRemoteTraversalDBKey } from '~/utils/get-db-key'
 import globalLogger from '~/utils/logger'
-import { getNutstoreDavEndpoint } from '~/utils/nutstore-endpoints'
+import { QUARK_API_BASE } from '~/remote/quark/constants'
 import { stdRemotePath } from '~/utils/std-remote-path'
 import {
 	getRemoteSyncCacheDirPath,
@@ -20,17 +20,17 @@ import {
 } from '~/utils/sync-cache-file'
 import { isTraversalCacheCompatible } from '~/utils/traversal-cache-compat'
 import { uint8ArrayToArrayBuffer } from '~/utils/uint8array-to-arraybuffer'
-import type NutstorePlugin from '..'
+import type QuarkSyncPlugin from '..'
 import { BaseService } from './service.interface'
 
 export interface ExportedStorage {
 	exportedAt: string
 	remoteBaseDir?: string
-	traverseWebDAVCache?: TraverseWebDAVCache
+	traverseWebDAVCache?: RemoteTraversalCache
 }
 
 export default class CacheServiceV1 extends BaseService {
-	constructor(private plugin: NutstorePlugin) {
+	constructor(private plugin: QuarkSyncPlugin) {
 		super()
 	}
 
@@ -43,12 +43,12 @@ export default class CacheServiceV1 extends BaseService {
 
 		try {
 			const kvKey = await this.getKVKey()
-			const localCache = await traverseWebDAVKV.get(kvKey)
+			const localCache = await remoteTraversalKV.get(kvKey)
 			if (localCache?.queue?.length === 0) {
 				return false
 			}
 
-			const remote = await this.plugin.webDAVService.createRemoteFs()
+			const remote = await this.plugin.remoteBackendService.createRemoteFs()
 			const filePath = this.remoteCacheFilePath
 			const fileExists = await remote.exists(filePath).catch(() => false)
 			if (!fileExists) {
@@ -75,7 +75,7 @@ export default class CacheServiceV1 extends BaseService {
 				return false
 			}
 
-			await traverseWebDAVKV.set(kvKey, exportedStorage.traverseWebDAVCache)
+			await remoteTraversalKV.set(kvKey, exportedStorage.traverseWebDAVCache)
 			logger.info('Restored remote traversal cache')
 			return true
 		} catch (error) {
@@ -96,7 +96,7 @@ export default class CacheServiceV1 extends BaseService {
 			if (isCancelled()) {
 				return false
 			}
-			const traverseWebDAVCache = await traverseWebDAVKV.get(
+			const traverseWebDAVCache = await remoteTraversalKV.get(
 				await this.getKVKey(),
 			)
 			if (!traverseWebDAVCache || traverseWebDAVCache.queue.length > 0) {
@@ -107,7 +107,7 @@ export default class CacheServiceV1 extends BaseService {
 			const nodesHash = hashObject(filteredCache.nodes)
 			const metaKey = await this.getKVKey()
 
-			const remote = await this.plugin.webDAVService.createRemoteFs()
+			const remote = await this.plugin.remoteBackendService.createRemoteFs()
 			if (isCancelled()) {
 				return false
 			}
@@ -180,21 +180,21 @@ export default class CacheServiceV1 extends BaseService {
 	}
 
 	private async getKVKey() {
-		return getTraversalWebDAVDBKey(
+		return getRemoteTraversalDBKey(
 			await this.plugin.getRemoteAccountId(),
-			getNutstoreDavEndpoint(this.plugin.settings),
+			QUARK_API_BASE,
 			this.plugin.remoteBaseDir,
 		)
 	}
 
 	private withoutRemoteSyncCacheFile(
-		cache: TraverseWebDAVCache,
-	): TraverseWebDAVCache {
+		cache: RemoteTraversalCache,
+	): RemoteTraversalCache {
 		const remoteCacheFilePath = normalize(this.remoteCacheFilePath)
 		const localCacheFilePath = normalize(
 			getSyncCacheLocalPath(this.plugin.app.vault.configDir),
 		)
-		const nodes: TraverseWebDAVCache['nodes'] = {}
+		const nodes: RemoteTraversalCache['nodes'] = {}
 
 		for (const [dirPath, stats] of Object.entries(cache.nodes)) {
 			nodes[dirPath] = stats.filter((stat) => {

@@ -8,19 +8,9 @@
 			"desc": "选择界面语言",
 			"auto": "自动检测"
 		},
-		"account": {
-			"name": "账号",
-			"desc": "输入你的 WebDAV 账号",
-			"placeholder": "输入你的账号"
-		},
-		"credential": {
-			"name": "凭证",
-			"desc": "输入你在坚果云“安全选项”中创建的“应用密码”，不是你的登录密码",
-			"placeholder": "输入你的坚果云应用密码"
-		},
 		"remoteDir": {
 			"name": "远程目录",
-			"desc": "本仓库与坚果云的哪个文件夹同步。可点右侧文件夹按钮可视化选择。",
+			"desc": "本仓库与夸克网盘中的哪个文件夹同步。留空时使用仓库名，文件夹会自动创建在根目录 FID 之下。",
 			"placeholder": "例如 /MyNotes"
 		},
 		"checkConnection": {
@@ -30,11 +20,6 @@
 			"failure": "WebDAV 连接失败",
 			"successButton": "连接成功 ✓",
 			"failureButton": "连接失败 ×"
-		},
-		"login": {
-			"name": "登录",
-			"success": "登录成功",
-			"failure": "登录失败，请重试"
 		},
 		"backupWarning": {
 			"name": "备份提醒",
@@ -48,50 +33,17 @@
 			"localPriority": "本地优先（覆盖服务器）",
 			"serverPriority": "服务器优先（覆盖本地）"
 		},
-		"loginMode": {
-			"name": "登录方式",
-			"manual": "手动输入",
-			"sso": "单点登录"
-		},
-		"ssoStatus": {
-			"loggedIn": "已登录",
-			"notLoggedIn": "未登录",
-			"logout": "退出登录",
-			"logoutSuccess": "已退出登录"
-		},
 		"logout": {
 			"confirmTitle": "确认退出",
 			"confirmMessage": "确定要退出登录吗？退出后需要重新登录才能继续同步。",
 			"confirm": "确认退出",
 			"cancel": "取消"
 		},
-		"help": {
-			"name": "如何获取 WebDAV 账号和凭证？"
-		},
-		"enterpriseBaseUrl": {
-			"name": "企业版坚果云",
-			"desc": "可选配置企业版坚果云 Base URL，留空则使用默认地址。例如：https://dav.jianguoyun.com",
-			"action": "设置",
-			"modalTitle": "设置企业版坚果云 Base URL",
-			"placeholder": "例如 https://dav.jianguoyun.com",
-			"invalid": "Base URL 不合法",
-			"invalidWithReason": "Base URL 不合法：{{reason}}",
-			"errors": {
-				"invalidFormat": "请输入完整的服务器地址，例如：https://dav.jianguoyun.com",
-				"unsupportedProtocol": "地址需要以 http:// 或 https:// 开头"
-			}
-		},
 		"sections": {
-			"account": "账号设置",
+			"account": "夸克网盘账号",
 			"common": "通用设置",
 			"filters": "过滤规则",
 			"ai": "AI 设置"
-		},
-		"remoteProvider": {
-			"name": "网盘类型",
-			"desc": "选择同步所使用的网盘后端",
-			"nutstore": "坚果云（WebDAV）",
-			"quark": "夸克网盘（开放平台）"
 		},
 		"quark": {
 			"hint": "夸克网盘不提供 WebDAV，需要使用开放平台应用：在夸克开放平台创建应用后，把 app_id、sign_key 与授权得到的令牌填到这里。凭据只保存在本地。",
@@ -495,6 +447,11 @@
 			"generateBlobGarbage": "生成垃圾快照",
 			"generateBlobGarbageRunning": "正在生成垃圾快照...",
 			"generateBlobGarbageDone": "已生成 {{count}} 个垃圾快照。"
+		},
+		"login": {
+			"name": "登录",
+			"success": "登录成功",
+			"failure": "登录失败，请重试"
 		}
 	},
 	"aiPermission": {
@@ -571,8 +528,7 @@
 			"failedToAutoMerge": "自动合并失败",
 			"failedToUploadMerged": "上传合并内容失败",
 			"requestsTooFrequent": "请求过于频繁，请等待几分钟后再试",
-			"accountNotConfigured": "尚未配置坚果云账号，请先在设置中配置账号信息",
-			"ssoTokenInvalid": "登录已失效，请在设置中重新登录。"
+			"accountNotConfigured": "尚未配置坚果云账号，请先在设置中配置账号信息"
 		},
 		"requestsTooFrequent": "请求过于频繁，插件将在 {{time}} 后自动继续同步任务",
 		"preparing": "📋 准备同步",
@@ -885,17 +841,6 @@
 			"action": "操作",
 			"localPath": "本地路径",
 			"remotePath": "远程路径"
-		}
-	},
-	"webdavExplorer": {
-		"actions": {
-			"newFolder": "新建文件夹",
-			"goBack": "返回上一层",
-			"confirm": "确定",
-			"cancel": "取消"
-		},
-		"labels": {
-			"currentPath": "当前路径"
 		}
 	}
 }

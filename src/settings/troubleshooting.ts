@@ -114,10 +114,10 @@ export default class TroubleshootingSettings extends BaseSettings {
 		try {
 			const now = new Date()
 			const timestamp = formatLocalTimestampForFilename(now)
-			const fileName = `nutstore-logs-${timestamp}.md`
-			const dirPath = 'nutstore-sync/logs'
+			const fileName = `quark-sync-logs-${timestamp}.md`
+			const dirPath = 'quark-sync/logs'
 			const filePath = `${dirPath}/${fileName}`
-			const content = `# Nutstore Plugin Logs\n\nGenerated at: ${now.toLocaleString()}\n\nPlugin version: ${this.plugin.manifest.version}\n\n---\n\n${this.logs}`
+			const content = `# Quark Sync Plugin Logs\n\nGenerated at: ${now.toLocaleString()}\n\nPlugin version: ${this.plugin.manifest.version}\n\n---\n\n${this.logs}`
 
 			const folderExists = await this.app.vault.adapter.exists(dirPath)
 			if (!folderExists) {

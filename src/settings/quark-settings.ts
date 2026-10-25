@@ -5,8 +5,6 @@
  * a plain Node environment.
  */
 
-export type RemoteProvider = 'nutstore' | 'quark'
-
 /**
  * How `QuarkRemoteFs` handles "write a file whose name already exists".
  * `reuse` leans on the API's `same_path_reuse` flag; `delete-first` deletes the

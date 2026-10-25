@@ -4,7 +4,7 @@ import { addClassTokens, removeClassTokens } from '~/utils/class-tokens'
 import logger from '~/utils/logger'
 import { emitCancelSync } from '../events'
 import i18n from '../i18n'
-import type NutstorePlugin from '../index'
+import type QuarkSyncPlugin from '../index'
 import { BaseService } from '../services/service.interface'
 import { SyncStartMode } from '../sync'
 import { type SyncPolicy } from '../settings'
@@ -15,7 +15,7 @@ export class SyncRibbonManager extends BaseService {
 	private startRibbonEl: HTMLElement | null = null
 	private stopRibbonEl: HTMLElement | null = null
 
-	constructor(private plugin: NutstorePlugin) {
+	constructor(private plugin: QuarkSyncPlugin) {
 		super()
 	}
 
@@ -98,11 +98,11 @@ export class SyncRibbonManager extends BaseService {
 		}
 		if (this.plugin.isSyncing) {
 			this.startRibbonEl.setAttr('aria-disabled', 'true')
-			this.startRibbonEl.addClass('nutstore-sync-spinning')
+			this.startRibbonEl.addClass('quark-sync-spinning')
 			removeClassTokens(this.stopRibbonEl, ':uno: hidden')
 		} else {
 			this.startRibbonEl.removeAttribute('aria-disabled')
-			this.startRibbonEl.removeClass('nutstore-sync-spinning')
+			this.startRibbonEl.removeClass('quark-sync-spinning')
 			addClassTokens(this.stopRibbonEl, ':uno: hidden')
 		}
 	}

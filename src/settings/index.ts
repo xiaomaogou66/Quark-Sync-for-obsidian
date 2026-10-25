@@ -2,14 +2,13 @@ import { App, PluginSettingTab, Setting } from 'obsidian'
 import { Subscription } from 'rxjs'
 import { AIProviderConfigs, AIProviderDefinitions } from '~/ai/core/types'
 import { onNutstoreLlmGatewayAuth } from '~/events/nutstore-llm-gateway-auth'
-import { onSsoReceive } from '~/events/sso-receive'
 import i18n from '~/i18n'
-import type NutstorePlugin from '~/index'
+import type QuarkSyncPlugin from '~/index'
 import type { NutstoreLlmGatewayAuthSettings } from '~/services/nutstore-llm-gateway.service'
 import { ConflictStrategy } from '~/sync/tasks/conflict-resolve.task'
 import { DEFAULT_MOBILE_APP_DOWNLOAD_FILE_CHUNK_SIZE } from '~/utils/download-chunk-size'
 import { GlobFilterRule } from '~/utils/glob-match'
-import AccountSettings from './account'
+import QuarkAccountSettings from './quark'
 import AISettings from './ai'
 import CommonSettings from './common'
 import FilterSettings from './filter'
@@ -128,7 +127,6 @@ export function getSyncPolicyDescI18nKey(
 import {
 	DEFAULT_QUARK_SETTINGS,
 	type QuarkSettings,
-	type RemoteProvider,
 } from './quark-settings'
 
 export {
@@ -136,19 +134,12 @@ export {
 	migrateQuarkSettings,
 	type QuarkOverwriteMode,
 	type QuarkSettings,
-	type RemoteProvider,
 } from './quark-settings'
 
-export interface NutstoreSettings {
-	remoteProvider: RemoteProvider
+export interface PluginSettings {
 	quark: QuarkSettings
-	account: string
-	credential: string
-	nutstoreEnterpriseBaseUrl: string
 	remoteDir: string
 	conflictStrategy: ConflictStrategy
-	oauthResponseText: string
-	loginMode: 'manual' | 'sso'
 	confirmBeforeSync: boolean
 	confirmBeforeDeleteInAutoSync: boolean
 	syncMode: SyncMode
@@ -192,22 +183,16 @@ function exclude(expr: string): GlobFilterRule {
 	}
 }
 
-export const DEFAULT_SETTINGS: NutstoreSettings = {
-	remoteProvider: 'nutstore',
+export const DEFAULT_SETTINGS: PluginSettings = {
 	quark: { ...DEFAULT_QUARK_SETTINGS },
-	account: '',
-	credential: '',
-	nutstoreEnterpriseBaseUrl: '',
 	remoteDir: '',
 	conflictStrategy: ConflictStrategy.NoConflictMerge,
-	oauthResponseText: '',
-	loginMode: 'sso',
 	confirmBeforeSync: true,
 	confirmBeforeDeleteInAutoSync: true,
 	syncMode: SyncMode.LOOSE,
 	filterRules: {
 		rules: [
-			'**/*.nutstore-sync-*.download',
+			'**/*.quark-sync-*.download',
 			'**/__MACOSX',
 			'**/.DS_Store',
 			'**/.env',
@@ -256,7 +241,7 @@ export const DEFAULT_SETTINGS: NutstoreSettings = {
 	configDirSyncMode: 'none',
 }
 
-export interface NutstoreLocalSettings {
+export interface PluginLocalSettings {
 	syncPolicy: SyncPolicy
 	ai: {
 		presetModels?: AIProviderDefinitions
@@ -264,7 +249,7 @@ export interface NutstoreLocalSettings {
 	}
 }
 
-export const DEFAULT_LOCAL_SETTINGS: NutstoreLocalSettings = {
+export const DEFAULT_LOCAL_SETTINGS: PluginLocalSettings = {
 	syncPolicy: SyncPolicy.TwoWay,
 	ai: {},
 }
@@ -274,9 +259,9 @@ interface SettingsSectionEntry {
 	containerEl: HTMLElement
 }
 
-export class NutstoreSettingTab extends PluginSettingTab {
-	plugin: NutstorePlugin
-	accountSettings: AccountSettings
+export class QuarkSyncSettingTab extends PluginSettingTab {
+	plugin: QuarkSyncPlugin
+	accountSettings: QuarkAccountSettings
 	commonSettings: CommonSettings
 	filterSettings: FilterSettings
 	troubleshootingSettings: TroubleshootingSettings
@@ -287,21 +272,18 @@ export class NutstoreSettingTab extends PluginSettingTab {
 	private readonly tabSections: Record<SettingsTabKey, SettingsSectionEntry[]>
 
 	private readonly subscriptions: Subscription[] = [
-		onSsoReceive().subscribe(() => {
-			void this.rerenderIfVisible()
-		}),
 		onNutstoreLlmGatewayAuth().subscribe(() => {
 			void this.rerenderIfVisible()
 		}),
 	]
 
-	constructor(app: App, plugin: NutstorePlugin) {
+	constructor(app: App, plugin: QuarkSyncPlugin) {
 		super(app, plugin)
 		this.plugin = plugin
 		this.tabBarEl = this.containerEl.createDiv()
 		this.warningContainerEl = this.containerEl.createDiv()
 		const accountContainerEl = this.containerEl.createDiv()
-		this.accountSettings = new AccountSettings(
+		this.accountSettings = new QuarkAccountSettings(
 			this.app,
 			this.plugin,
 			this,
@@ -398,10 +380,6 @@ export class NutstoreSettingTab extends PluginSettingTab {
 		}
 	}
 
-	get isSSO() {
-		return this.plugin.settings.loginMode === 'sso'
-	}
-
 	isVisible() {
 		return (
 			this.containerEl.isConnected &&
@@ -419,7 +397,6 @@ export class NutstoreSettingTab extends PluginSettingTab {
 	}
 
 	async onClose() {
-		await this.accountSettings.hide()
 		this.troubleshootingSettings.hide()
 	}
 

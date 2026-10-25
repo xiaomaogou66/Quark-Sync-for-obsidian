@@ -7,7 +7,7 @@ import i18n from '~/i18n'
 import { blobKV, syncRecordKV } from '~/storage/kv'
 import logger from '~/utils/logger'
 import { BaseService } from './service.interface'
-import type NutstorePlugin from '..'
+import type QuarkSyncPlugin from '..'
 
 export type GcRunResult =
 	| {
@@ -23,7 +23,7 @@ export default class GcService extends BaseService {
 	private lock = new Mutex()
 	private stopRequested = false
 
-	constructor(private plugin: NutstorePlugin) {
+	constructor(private plugin: QuarkSyncPlugin) {
 		super()
 	}
 

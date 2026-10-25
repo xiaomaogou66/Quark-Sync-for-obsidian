@@ -1,12 +1,12 @@
 import { App } from 'obsidian'
-import { NutstoreSettingTab } from '.'
-import NutstorePlugin from '..'
+import { QuarkSyncSettingTab } from '.'
+import QuarkSyncPlugin from '..'
 
 export default abstract class BaseSettings {
 	constructor(
 		protected app: App,
-		protected plugin: NutstorePlugin,
-		protected settings: NutstoreSettingTab,
+		protected plugin: QuarkSyncPlugin,
+		protected settings: QuarkSyncSettingTab,
 		protected containerEl: HTMLElement,
 	) {}
 

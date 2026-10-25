@@ -4,7 +4,7 @@ import {
 	RequestUrlResponse,
 } from 'obsidian'
 import logger from './logger'
-import { isNutstoreHost, MOCK_USER_AGENT, NS_SYNC_USER_AGENT } from './ua'
+import { MOCK_USER_AGENT } from './ua'
 
 class RequestUrlError extends Error {
 	constructor(public res: RequestUrlResponse) {
@@ -15,15 +15,10 @@ class RequestUrlError extends Error {
 export default async function requestUrl(p: RequestUrlParam | string) {
 	const url = typeof p === 'string' ? p : p.url
 	const originalHeaders = typeof p === 'string' ? {} : p.headers || {}
-	const headers = isNutstoreHost(url)
-		? {
-				...originalHeaders,
-				'User-Agent': NS_SYNC_USER_AGENT,
-			}
-		: {
-				...originalHeaders,
-				'User-Agent': MOCK_USER_AGENT,
-			}
+	const headers = {
+		...originalHeaders,
+		'User-Agent': MOCK_USER_AGENT,
+	}
 
 	const params: RequestUrlParam =
 		typeof p === 'string'

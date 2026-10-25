@@ -2,12 +2,11 @@ import { Mutex } from 'async-mutex'
 import type { StatModel } from '~/model/stat.model'
 import { remoteEntryToStatModel } from '~/remote/remote-fs.interface'
 import type { RemoteFs } from '~/remote/remote-fs.interface'
-import { traverseWebDAVKV } from '~/storage'
+import { remoteTraversalKV } from '~/storage'
 import { apiLimiter } from './api-limiter'
 import logger from './logger'
 import { stdRemotePath } from './std-remote-path'
 import { isTraversalCacheCompatible } from './traversal-cache-compat'
-import type { WebDAVTraversalProgress } from './traverse-webdav'
 import type { MaybePromise } from './types'
 
 /**
@@ -21,7 +20,7 @@ import type { MaybePromise } from './types'
  *   must not be able to resurrect deleted remote files, `nodes` is rebuilt from
  *   scratch on every traversal.
  *
- * The persisted shape is identical to the WebDAV cache (`TraverseWebDAVCache`)
+ * The persisted shape is identical to the WebDAV cache (`RemoteTraversalCache`)
  * so the existing remote-cache upload/restore code keeps working unchanged.
  */
 
@@ -38,12 +37,21 @@ function getTraversalLock(kvKey: string): Mutex {
 	return traversalLocks.get(kvKey)!
 }
 
+export interface RemoteTraversalProgress {
+	phase: 'scanning' | 'incremental' | 'retrying' | 'complete'
+	currentPath?: string
+	processedDirectories: number
+	queuedDirectories: number
+	discoveredItems: number
+	processedChanges: number
+}
+
 export interface RemoteTraversalOptions {
 	remote: RemoteFs
 	remoteBaseDir: string
 	kvKey: string
 	saveInterval?: number
-	onProgress?: (progress: WebDAVTraversalProgress) => void
+	onProgress?: (progress: RemoteTraversalProgress) => void
 	throwIfCancelled?: () => void
 	/** Retry budget for transient backend errors, defaults to 3. */
 	maxRetries?: number
@@ -56,7 +64,7 @@ export class ResumableRemoteTraversal {
 	private readonly remoteBaseDir: string
 	private readonly kvKey: string
 	private readonly saveInterval: number
-	private readonly onProgress?: (progress: WebDAVTraversalProgress) => void
+	private readonly onProgress?: (progress: RemoteTraversalProgress) => void
 	private readonly throwIfCancelled?: () => void
 	private readonly maxRetries: number
 	private readonly retryDelayMs: number
@@ -82,7 +90,7 @@ export class ResumableRemoteTraversal {
 	}
 
 	private emitProgress(
-		phase: WebDAVTraversalProgress['phase'],
+		phase: RemoteTraversalProgress['phase'],
 		currentPath?: string,
 	) {
 		this.onProgress?.({
@@ -189,7 +197,7 @@ export class ResumableRemoteTraversal {
 	}
 
 	private async dropIncompatibleCache() {
-		const cache = await traverseWebDAVKV.get(this.kvKey)
+		const cache = await remoteTraversalKV.get(this.kvKey)
 		if (!cache) {
 			return
 		}
@@ -197,12 +205,12 @@ export class ResumableRemoteTraversal {
 			logger.warn(
 				'[RemoteTraversal] discarding incompatible traversal cache for current remote directory',
 			)
-			await traverseWebDAVKV.unset(this.kvKey)
+			await remoteTraversalKV.unset(this.kvKey)
 		}
 	}
 
 	private async saveState() {
-		await traverseWebDAVKV.set(this.kvKey, {
+		await remoteTraversalKV.set(this.kvKey, {
 			rootCursor: '',
 			queue: this.queue,
 			nodes: this.nodes,
@@ -210,7 +218,7 @@ export class ResumableRemoteTraversal {
 	}
 
 	async clearCache() {
-		await traverseWebDAVKV.unset(this.kvKey)
+		await remoteTraversalKV.unset(this.kvKey)
 		this.queue = []
 		this.nodes = {}
 		this.processedCount = 0

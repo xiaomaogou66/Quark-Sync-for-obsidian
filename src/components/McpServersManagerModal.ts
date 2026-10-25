@@ -8,14 +8,14 @@ import i18n from '~/i18n'
 import type { McpServerRuntimeInfo } from '~/services/mcp.service'
 import { addClassTokens, removeClassTokens } from '~/utils/class-tokens'
 import logger from '~/utils/logger'
-import type NutstorePlugin from '..'
+import type QuarkSyncPlugin from '..'
 import McpServerEditorModal, {
 	type McpServerDraft,
 } from './McpServerEditorModal'
 
 export default class McpServersManagerModal extends Modal {
 	constructor(
-		private plugin: NutstorePlugin,
+		private plugin: QuarkSyncPlugin,
 		private onChanged: () => Promise<void> | void,
 	) {
 		super(plugin.app)

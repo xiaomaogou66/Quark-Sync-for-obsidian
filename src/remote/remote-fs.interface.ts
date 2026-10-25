@@ -3,7 +3,7 @@ import type { StatModel } from '~/model/stat.model'
 /**
  * Backend-neutral description of one remote entry.
  *
- * Every remote backend (Nutstore WebDAV, Quark Drive, ...) is expected to
+ * Every remote backend (currently Quark Drive) is expected to
  * normalise its own payload into this shape so that the sync engine never has
  * to know which protocol it is talking to.
  */
@@ -38,7 +38,7 @@ export type RemoteFileContent = ArrayBuffer | string
  */
 export interface RemoteFs {
 	/** Backend discriminator, used to pick traversal strategies and UI copy. */
-	readonly kind: 'webdav' | 'quark'
+	readonly kind: 'quark'
 
 	/** One-off initialisation (token → user id, caches, ...). */
 	init?(): Promise<void>

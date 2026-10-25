@@ -7,7 +7,7 @@ import {
 import { obsidianFetch } from '~/ai/transport/obsidian-fetch'
 import logger from '~/utils/logger'
 import { BaseService } from './service.interface'
-import type NutstorePlugin from '..'
+import type QuarkSyncPlugin from '..'
 
 const MODELS_API_URL = 'https://models.dev/api.json'
 
@@ -30,7 +30,7 @@ function countProvidersAndModels(
 }
 
 export default class ModelsPresetService extends BaseService {
-	constructor(private plugin: NutstorePlugin) {
+	constructor(private plugin: QuarkSyncPlugin) {
 		super()
 	}
 

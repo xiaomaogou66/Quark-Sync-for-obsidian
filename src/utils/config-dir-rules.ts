@@ -1,4 +1,4 @@
-import type NutstorePlugin from '~/index'
+import type QuarkSyncPlugin from '~/index'
 import GlobMatch, {
 	compileFilterRules,
 	type GlobFilterRule,
@@ -28,7 +28,7 @@ const CONFIG_DIR_SYSTEM_EXCLUSION_SUFFIXES = [
 	'plugins/**/node_modules',
 	'plugins/**/.git',
 	'plugins/**/.pnpm-store',
-	'plugins/nutstore-sync/data.local.json',
+	'plugins/quark-sync/data.local.json',
 	`${REMOTE_SYNC_CACHE_DIR}/${REMOTE_SYNC_CACHE_FILENAME}`,
 	'workspace',
 	'workspace.json',
@@ -153,7 +153,7 @@ export function computeEffectiveFilterRulesFromParts(
 
 /**
  * Returns true if `path` points to a file or folder inside this plugin's own
- * directory `<configDir>/plugins/nutstore-sync/` (or that directory itself).
+ * directory `<configDir>/plugins/quark-sync/` (or that directory itself).
  *
  * The plugin must never delete its own files during sync — when the remote
  * vault simply does not have the plugin installed, the local plugin files
@@ -161,7 +161,7 @@ export function computeEffectiveFilterRulesFromParts(
  * self-deletion.
  */
 export function isPluginSelfPath(path: string, configDir: string): boolean {
-	const pluginDir = `${configDir}/plugins/nutstore-sync`
+	const pluginDir = `${configDir}/plugins/quark-sync`
 	return path === pluginDir || path.startsWith(`${pluginDir}/`)
 }
 
@@ -174,7 +174,7 @@ export function isPluginSelfPath(path: string, configDir: string): boolean {
  * sync time only.
  */
 export function computeEffectiveFilterRules(
-	plugin: NutstorePlugin,
+	plugin: QuarkSyncPlugin,
 ): EffectiveFilterRules {
 	const configDir = plugin.app.vault.configDir
 	const mode: ConfigDirSyncMode = plugin.settings.configDirSyncMode ?? 'none'

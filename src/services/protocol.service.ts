@@ -1,35 +1,26 @@
 import { Notice } from 'obsidian'
 import { getProviderById } from '~/ai/catalog/config'
-import ProviderEditorModal from '~/components/ProviderEditorModal'
 import type { ChatModalMountTarget } from '~/ai/chat/ui/modal-mount'
-import { emitSsoReceive } from '~/events/sso-receive'
+import ProviderEditorModal from '~/components/ProviderEditorModal'
 import i18n from '~/i18n'
 import logger from '~/utils/logger'
+import type QuarkSyncPlugin from '..'
 import { BaseService } from './service.interface'
-import type NutstorePlugin from '..'
 
+/**
+ * Handles `obsidian://quark-sync/…` deep links.
+ *
+ * Only the AI provider editor is routed here; the Nutstore SSO callback that
+ * used to live in this service was removed together with the Nutstore backend.
+ */
 export default class ProtocolService extends BaseService {
-	constructor(private plugin: NutstorePlugin) {
+	constructor(private plugin: QuarkSyncPlugin) {
 		super()
 	}
 
 	override onload() {
 		this.plugin.registerObsidianProtocolHandler(
-			'nutstore-sync/sso',
-			async (data) => {
-				if (data?.s) {
-					this.plugin.settings.oauthResponseText = data.s
-					await this.plugin.settingsService.saveSettings()
-					new Notice(i18n.t('settings.login.success'), 5000)
-				}
-				emitSsoReceive({
-					token: data?.s,
-				})
-			},
-		)
-
-		this.plugin.registerObsidianProtocolHandler(
-			'nutstore-sync/modal/provider-edit',
+			'quark-sync/modal/provider-edit',
 			async (data) => {
 				const providerId =
 					typeof data?.providerId === 'string' ? data.providerId.trim() : ''
@@ -65,7 +56,7 @@ export default class ProtocolService extends BaseService {
 			async (savedProvider) => {
 				this.plugin.settings.ai.providers = {
 					...this.plugin.settings.ai.providers,
-					[providerId]: savedProvider,
+					[savedProvider.id]: savedProvider,
 				}
 				await this.plugin.settingsService.saveSettings()
 				return true

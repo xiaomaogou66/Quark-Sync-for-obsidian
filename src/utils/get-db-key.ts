@@ -10,7 +10,7 @@ export function getDBKey(vaultName: string, remoteBaseDir: string) {
 	})
 }
 
-export async function getTraversalWebDAVDBKey(
+export async function getRemoteTraversalDBKey(
 	remoteAccountId: string,
 	remoteEndpoint: string,
 	remoteBaseDir: string,

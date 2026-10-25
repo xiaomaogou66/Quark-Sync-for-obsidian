@@ -9,7 +9,7 @@ import { BaseTask } from '~/sync/tasks/task.interface'
 import { addClassTokens, removeClassTokens } from '~/utils/class-tokens'
 import getTaskName from '~/utils/get-task-name'
 import { getSyncPreparationText } from '~/utils/sync-preparation-text'
-import NutstorePlugin from '..'
+import QuarkSyncPlugin from '..'
 import {
 	emitCancelSync,
 	onCancelSync,
@@ -55,7 +55,7 @@ export default class SyncProgressModal extends Modal {
 	private cacheProgressSection!: HTMLDivElement
 
 	constructor(
-		private plugin: NutstorePlugin,
+		private plugin: QuarkSyncPlugin,
 		private closeCallback?: () => void,
 	) {
 		super(plugin.app)
@@ -129,14 +129,14 @@ export default class SyncProgressModal extends Modal {
 			}
 			this.progressBar.setCssProps({ width: '' })
 			this.resetCacheProgress()
-			this.progressBar.addClass('nutstore-sync-progress-indeterminate')
+			this.progressBar.addClass('quark-sync-progress-indeterminate')
 			addClassTokens(this.progressBar, ':uno: w-[40%]')
 			this.progressText.setText('')
 			this.filesSection.hide()
 			return
 		}
 
-		this.progressBar.removeClass('nutstore-sync-progress-indeterminate')
+		this.progressBar.removeClass('quark-sync-progress-indeterminate')
 		removeClassTokens(this.progressBar, ':uno: w-[40%]')
 		if (state === 'complete' && progress.total === 0) {
 			this.filesSection.hide()
@@ -191,17 +191,17 @@ export default class SyncProgressModal extends Modal {
 		failedCount = 0,
 	): void {
 		const stateClasses = [
-			'nutstore-sync-progress__status-icon--preparing',
-			'nutstore-sync-progress__status-icon--syncing',
-			'nutstore-sync-progress__status-icon--complete',
-			'nutstore-sync-progress__status-icon--warning',
-			'nutstore-sync-progress__status-icon--error',
-			'nutstore-sync-progress__status-icon--cancelled',
+			'quark-sync-progress__status-icon--preparing',
+			'quark-sync-progress__status-icon--syncing',
+			'quark-sync-progress__status-icon--complete',
+			'quark-sync-progress__status-icon--warning',
+			'quark-sync-progress__status-icon--error',
+			'quark-sync-progress__status-icon--cancelled',
 		]
 		removeClassTokens(this.statusIcon, ...stateClasses)
 		addClassTokens(
 			this.statusIcon,
-			`nutstore-sync-progress__status-icon--${state}`,
+			`quark-sync-progress__status-icon--${state}`,
 		)
 
 		const icon =
@@ -219,7 +219,7 @@ export default class SyncProgressModal extends Modal {
 		this.statusIcon.empty()
 		setIcon(this.statusIcon, icon)
 		this.statusIcon.classList.toggle(
-			'nutstore-sync-spinning',
+			'quark-sync-spinning',
 			state === 'preparing' || state === 'syncing',
 		)
 
@@ -313,69 +313,69 @@ export default class SyncProgressModal extends Modal {
 	onOpen() {
 		const { contentEl } = this
 		contentEl.empty()
-		this.modalEl.addClass('nutstore-sync-progress-modal')
-		contentEl.addClass('nutstore-sync-progress-modal__content')
+		this.modalEl.addClass('quark-sync-progress-modal')
+		contentEl.addClass('quark-sync-progress-modal__content')
 
 		const container = contentEl.createDiv({
-			cls: 'nutstore-sync-progress',
+			cls: 'quark-sync-progress',
 		})
 
 		const title = this.titleEl
 		title.empty()
-		title.addClass('nutstore-sync-progress__native-title')
+		title.addClass('quark-sync-progress__native-title')
 
 		const heading = title.createDiv({
-			cls: 'nutstore-sync-progress__heading',
+			cls: 'quark-sync-progress__heading',
 		})
 		const statusIcon = heading.createDiv({
-			cls: 'nutstore-sync-progress__status-icon--preparing',
+			cls: 'quark-sync-progress__status-icon--preparing',
 		})
 		setIcon(statusIcon, 'loader-circle')
 		const titleText = title.createSpan({
-			cls: 'nutstore-sync-progress__title-text',
+			cls: 'quark-sync-progress__title-text',
 		})
 		titleText.setText(i18n.t('sync.progressTitle'))
 
 		const statusSection = container.createDiv({
-			cls: 'nutstore-sync-progress__status',
+			cls: 'quark-sync-progress__status',
 		})
 
 		const currentFile = statusSection.createDiv({
-			cls: 'nutstore-sync-progress__current-file',
+			cls: 'quark-sync-progress__current-file',
 		})
 
 		const statusMessage = statusSection.createDiv({
-			cls: 'nutstore-sync-progress__summary',
+			cls: 'quark-sync-progress__summary',
 		})
 		statusMessage.hide()
 
 		const progressCard = container.createDiv({
-			cls: 'nutstore-sync-progress__card',
+			cls: 'quark-sync-progress__card',
 		})
 		const progressSection = progressCard.createDiv({
-			cls: 'nutstore-sync-progress__primary',
+			cls: 'quark-sync-progress__primary',
 		})
 
 		const progressLabel = progressSection.createDiv({
-			cls: 'nutstore-sync-progress__label',
+			cls: 'quark-sync-progress__label',
 		})
 		progressLabel.setText(i18n.t('sync.progressLabel'))
 
 		const progressBarContainer = progressSection.createDiv({
-			cls: 'nutstore-sync-progress__bar-container',
+			cls: 'quark-sync-progress__bar-container',
 		})
 
 		const progressBar = progressBarContainer.createDiv({
-			cls: 'nutstore-sync-progress__bar',
+			cls: 'quark-sync-progress__bar',
 		})
 
 		const progressText = progressBarContainer.createDiv({
-			cls: 'nutstore-sync-progress__bar-label',
+			cls: 'quark-sync-progress__bar-label',
 		})
 
 		// Cache progress section
 		const cacheProgressSection = progressCard.createDiv({
-			cls: 'nutstore-sync-progress__cache',
+			cls: 'quark-sync-progress__cache',
 		})
 		this.cacheProgressSection = cacheProgressSection
 		this.cacheProgressSection.hide()
@@ -384,28 +384,28 @@ export default class SyncProgressModal extends Modal {
 		this.cacheCurrentOperation.hide()
 
 		const cacheProgressLabel = cacheProgressSection.createDiv({
-			cls: 'nutstore-sync-progress__label',
+			cls: 'quark-sync-progress__label',
 		})
 		cacheProgressLabel.setText(i18n.t('sync.cacheProgressLabel'))
 
 		const cacheProgressBarContainer = cacheProgressSection.createDiv({
-			cls: 'nutstore-sync-progress__bar-container',
+			cls: 'quark-sync-progress__bar-container',
 		})
 		cacheProgressBarContainer.hide()
 
 		this.cacheProgressBar = cacheProgressBarContainer.createDiv({
-			cls: 'nutstore-sync-progress__bar',
+			cls: 'quark-sync-progress__bar',
 		})
 		this.cacheProgressText = cacheProgressBarContainer.createDiv({
-			cls: 'nutstore-sync-progress__bar-label',
+			cls: 'quark-sync-progress__bar-label',
 		})
 
 		const filesSection = container.createDiv({
-			cls: 'nutstore-sync-progress__files',
+			cls: 'quark-sync-progress__files',
 		})
 
 		const filesList = filesSection.createDiv({
-			cls: 'nutstore-sync-progress__files-list',
+			cls: 'quark-sync-progress__files-list',
 		})
 
 		this.progressTitle = titleText
@@ -420,7 +420,7 @@ export default class SyncProgressModal extends Modal {
 		this.filesSection = filesSection
 
 		const footerButtons = container.createDiv({
-			cls: 'nutstore-sync-progress__footer',
+			cls: 'quark-sync-progress__footer',
 		})
 
 		const stopButton = new ButtonComponent(footerButtons)
@@ -441,10 +441,10 @@ export default class SyncProgressModal extends Modal {
 		this.updateMtimeSubscription.unsubscribe()
 		const { contentEl } = this
 		contentEl.empty()
-		contentEl.removeClass('nutstore-sync-progress-modal__content')
+		contentEl.removeClass('quark-sync-progress-modal__content')
 		this.titleEl.empty()
-		this.titleEl.removeClass('nutstore-sync-progress__native-title')
-		this.modalEl.removeClass('nutstore-sync-progress-modal')
+		this.titleEl.removeClass('quark-sync-progress__native-title')
+		this.modalEl.removeClass('quark-sync-progress-modal')
 		if (this.closeCallback) {
 			this.closeCallback()
 		}

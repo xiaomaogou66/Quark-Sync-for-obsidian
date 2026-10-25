@@ -4,7 +4,6 @@ import {
 	diff3Merge as nodeDiff3Merge,
 	mergeDiff3 as nodeMergeDiff3,
 } from 'node-diff3'
-import { BufferLike } from 'webdav'
 import * as Y from 'yjs'
 
 // --- Logic for Latest Timestamp Resolution ---
@@ -18,14 +17,14 @@ export enum LatestTimestampResolution {
 export interface LatestTimestampParams {
 	localMtime: number
 	remoteMtime: number
-	localContent: BufferLike
-	remoteContent: BufferLike
+	localContent: Uint8Array
+	remoteContent: Uint8Array
 }
 
 export type LatestTimestampResult =
 	| { status: LatestTimestampResolution.NoChange }
-	| { status: LatestTimestampResolution.UseRemote; content: BufferLike }
-	| { status: LatestTimestampResolution.UseLocal; content: BufferLike }
+	| { status: LatestTimestampResolution.UseRemote; content: Uint8Array }
+	| { status: LatestTimestampResolution.UseLocal; content: Uint8Array }
 
 export function resolveByLatestTimestamp(
 	params: LatestTimestampParams,

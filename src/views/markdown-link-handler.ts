@@ -1,4 +1,4 @@
-const PROVIDER_EDIT_PROTOCOL = 'obsidian://nutstore-sync/modal/provider-edit'
+const PROVIDER_EDIT_PROTOCOL = 'obsidian://quark-sync/modal/provider-edit'
 
 export type MarkdownLinkAction =
 	| { type: 'none' }

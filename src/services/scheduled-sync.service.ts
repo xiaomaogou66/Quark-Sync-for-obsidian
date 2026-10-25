@@ -1,6 +1,6 @@
 import { clamp } from 'lodash-es'
 import { SyncStartMode } from '~/sync'
-import type NutstorePlugin from '..'
+import type QuarkSyncPlugin from '..'
 import { BaseService } from './service.interface'
 import type SyncExecutorService from './sync-executor.service'
 
@@ -10,7 +10,7 @@ export default class ScheduledSyncService extends BaseService {
 	private startupSyncCompleted = false
 
 	constructor(
-		private plugin: NutstorePlugin,
+		private plugin: QuarkSyncPlugin,
 		private syncExecutor: SyncExecutorService,
 	) {
 		super()

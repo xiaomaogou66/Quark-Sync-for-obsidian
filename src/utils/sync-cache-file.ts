@@ -1,7 +1,7 @@
 import { dirname, join, normalize } from 'path-browserify'
 
 export const REMOTE_SYNC_CACHE_FILENAME = 'ObsidianNutstoreSync.SyncCache.v1'
-export const REMOTE_SYNC_CACHE_DIR = 'plugins/nutstore-sync/cache'
+export const REMOTE_SYNC_CACHE_DIR = 'plugins/quark-sync/cache'
 
 export function getRemoteSyncCacheFilePath(
 	remoteBaseDir: string,

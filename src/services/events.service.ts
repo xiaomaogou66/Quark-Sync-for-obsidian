@@ -13,12 +13,12 @@ import i18n from '~/i18n'
 import { is503Error } from '~/utils/is-503-error'
 import { getSyncPreparationText } from '~/utils/sync-preparation-text'
 import { BaseService } from './service.interface'
-import NutstorePlugin from '..'
+import QuarkSyncPlugin from '..'
 
 export default class EventsService extends BaseService {
 	subscriptions: Subscription[] = []
 
-	constructor(private plugin: NutstorePlugin) {
+	constructor(private plugin: QuarkSyncPlugin) {
 		super()
 	}
 

@@ -9,7 +9,7 @@ import {
 import i18n from '~/i18n'
 import { addClassTokens, toggleClassTokens } from '~/utils/class-tokens'
 import logger from '~/utils/logger'
-import type NutstorePlugin from '..'
+import type QuarkSyncPlugin from '..'
 
 interface ModelEditorOptions {
 	findPresetOnSave?: boolean
@@ -33,7 +33,7 @@ export default class ModelEditorModal extends Modal {
 	private cleanupModalMount?: () => void
 
 	constructor(
-		plugin: NutstorePlugin,
+		plugin: QuarkSyncPlugin,
 		model: AIModelConfig,
 		private onSave: (model: AIModelConfig) => Promise<boolean> | boolean,
 		private isNew: boolean,

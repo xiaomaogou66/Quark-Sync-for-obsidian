@@ -1,8 +1,9 @@
 # Synchronization Guide
 
-Nutstore Sync synchronizes an Obsidian vault and Nutstore through WebDAV. It
-uses incremental synchronization after it has synchronization history, so the
-first run can take longer than later runs.
+Quark Sync synchronizes an Obsidian vault and Quark Drive through the Quark open
+platform. The Quark API exposes no change feed, so every run walks the remote
+folder tree again; the first run is still slower because it also builds the sync
+record. Expect runs to take longer on large vaults and on throttled accounts.
 
 ## Before recommending a change
 
@@ -66,7 +67,7 @@ local work.
   overwritten.
 - When both copies have changed, the item is skipped to protect the local
   edit; this policy does not run the conflict resolver.
-- The plugin never deletes its own files (the `plugins/nutstore-sync/` folder
+- The plugin never deletes its own files (the `plugins/quark-sync/` folder
   inside the Obsidian config directory). When the remote vault does not have
   the plugin installed, those local files are preserved, even in Revert mode.
 

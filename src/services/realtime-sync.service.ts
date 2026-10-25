@@ -2,7 +2,7 @@ import { debounce } from 'lodash-es'
 import { SyncStartMode } from '~/sync'
 import waitUntil from '~/utils/wait-until'
 import { BaseService } from './service.interface'
-import NutstorePlugin from '..'
+import QuarkSyncPlugin from '..'
 import type SyncExecutorService from './sync-executor.service'
 
 export default class RealtimeSyncService extends BaseService {
@@ -21,7 +21,7 @@ export default class RealtimeSyncService extends BaseService {
 	private submitSyncRequest = debounce(this.submitDirectly, 8000)
 
 	constructor(
-		private plugin: NutstorePlugin,
+		private plugin: QuarkSyncPlugin,
 		private syncExecutor: SyncExecutorService,
 	) {
 		super()

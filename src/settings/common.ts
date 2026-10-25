@@ -1,7 +1,6 @@
 import { parse as bytesParse } from 'bytes-iec'
 import { clamp, isNil } from 'lodash-es'
 import { DropdownComponent, Notice, Setting, TextComponent } from 'obsidian'
-import SelectRemoteBaseDirModal from '~/components/SelectRemoteBaseDirModal'
 import SyncPolicyModal from '~/components/SyncPolicyModal'
 import i18n from '~/i18n'
 import { ConflictStrategy } from '~/sync/tasks/conflict-resolve.task'
@@ -41,20 +40,6 @@ export default class CommonSettings extends BaseSettings {
 				text.inputEl.addEventListener('blur', () => {
 					this.plugin.settings.remoteDir = this.plugin.remoteBaseDir
 					void this.display()
-				})
-			})
-			.addButton((button) => {
-				button.setIcon('folder').onClick(() => {
-					// 检查账号配置
-					if (!this.plugin.isAccountConfigured()) {
-						new Notice(i18n.t('sync.error.accountNotConfigured'))
-						return
-					}
-					new SelectRemoteBaseDirModal(this.app, this.plugin, async (path) => {
-						this.plugin.settings.remoteDir = path
-						await this.plugin.settingsService.saveSettings()
-						void this.display()
-					}).open()
 				})
 			})
 

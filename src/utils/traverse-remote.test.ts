@@ -4,7 +4,7 @@ import type { RemoteEntry, RemoteFs } from '~/remote/remote-fs.interface'
 const kvStore = new Map<string, unknown>()
 
 vi.mock('~/storage', () => ({
-	traverseWebDAVKV: {
+	remoteTraversalKV: {
 		get: async (key: string) => kvStore.get(key) ?? null,
 		set: async (key: string, value: unknown) => {
 			kvStore.set(key, value)

@@ -1,9 +1,9 @@
 import { Modal, Setting } from 'obsidian'
 import i18n from '~/i18n'
-import { blobKV, syncRecordKV, traverseWebDAVKV } from '~/storage/kv'
+import { blobKV, syncRecordKV, remoteTraversalKV } from '~/storage/kv'
 import { removeClassTokens } from '~/utils/class-tokens'
 import logger from '~/utils/logger'
-import type NutstorePlugin from '..'
+import type QuarkSyncPlugin from '..'
 
 export interface CacheClearOptions {
 	syncRecordEnabled: boolean
@@ -19,7 +19,7 @@ export default class CacheClearModal extends Modal {
 	}
 
 	constructor(
-		plugin: NutstorePlugin,
+		plugin: QuarkSyncPlugin,
 		private onSuccess?: (options: CacheClearOptions) => void | Promise<void>,
 	) {
 		super(plugin.app)
@@ -139,7 +139,7 @@ export default class CacheClearModal extends Modal {
 			}
 
 			if (traverseWebDAVEnabled) {
-				await traverseWebDAVKV.clear()
+				await remoteTraversalKV.clear()
 				cleared.push(
 					i18n.t('settings.cache.clearModal.traverseWebDAVCache.name'),
 				)

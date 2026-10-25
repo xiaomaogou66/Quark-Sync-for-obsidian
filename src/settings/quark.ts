@@ -170,7 +170,7 @@ export default class QuarkAccountSettings extends BaseSettings {
 						)
 
 						const { success, error, detail } =
-							await this.plugin.webDAVService.checkRemoteConnection()
+							await this.plugin.remoteBackendService.checkRemoteConnection()
 
 						removeClassTokens(
 							buttonEl,

@@ -12,14 +12,14 @@ import {
  * syncable via the existing sync module, and resilient to meta/index loss.
  *
  * Layout:
- *   .agents/nutstore-sync/
+ *   .agents/quark-sync/
  *     chat-meta.json          # lightweight index: order + active + cached titles
  *     sessions/<id>.json      # one whole ChatSession snapshot per file
  *
  * The title is embedded in EACH session file as well as cached in chat-meta.json
  * so a deleted or corrupted meta file never destroys the session titles.
  */
-export const CHAT_ROOT_DIR = '.agents/nutstore-sync'
+export const CHAT_ROOT_DIR = '.agents/quark-sync'
 export const CHAT_SESSIONS_DIR = `${CHAT_ROOT_DIR}/sessions`
 export const CHAT_META_FILENAME = 'chat-meta.json'
 

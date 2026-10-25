@@ -7,13 +7,13 @@ import {
 	getUserOptions,
 	GlobFilterRule,
 } from '~/utils/glob-match'
-import NutstorePlugin from '..'
+import QuarkSyncPlugin from '..'
 
 export default class FilterEditorModal extends Modal {
 	rules: GlobFilterRule[]
 
 	constructor(
-		plugin: NutstorePlugin,
+		plugin: QuarkSyncPlugin,
 		rules: GlobFilterRule[] = [],
 		private onSave: (filters: GlobFilterRule[]) => void | Promise<void>,
 		private getHighlightedRule?: (

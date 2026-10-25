@@ -1,6 +1,6 @@
 import { Notice } from 'obsidian'
 import i18n from '../i18n'
-import NutstorePlugin from '../index'
+import QuarkSyncPlugin from '../index'
 import { formatRelativeTime } from '../utils/format-relative-time'
 import { BaseService } from './service.interface'
 
@@ -10,7 +10,7 @@ export class StatusService extends BaseService {
 	private updateInterval: number | null = null
 	private baseStatusText: string = ''
 
-	constructor(private plugin: NutstorePlugin) {
+	constructor(private plugin: QuarkSyncPlugin) {
 		super()
 	}
 

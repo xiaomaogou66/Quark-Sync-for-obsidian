@@ -3,7 +3,7 @@ import { moment } from 'obsidian'
 import { IN_DEV } from '~/consts'
 import logger from '~/utils/logger'
 import { BaseService } from './service.interface'
-import NutstorePlugin from '..'
+import QuarkSyncPlugin from '..'
 
 export interface LogEntry {
 	timestamp: string
@@ -14,7 +14,7 @@ export interface LogEntry {
 export default class LoggerService extends BaseService {
 	logs: LogEntry[] = []
 
-	constructor(plugin: NutstorePlugin) {
+	constructor(plugin: QuarkSyncPlugin) {
 		super()
 		void plugin
 	}

@@ -1,5 +1,5 @@
 import { Subject } from 'rxjs'
-import type { WebDAVTraversalProgress } from '~/utils/traverse-webdav'
+import type { RemoteTraversalProgress } from '~/utils/traverse-remote'
 
 export type SyncPreparationPhase =
 	| 'checkingRemote'
@@ -10,7 +10,7 @@ export type SyncPreparationPhase =
 
 export interface SyncPreparationProgress {
 	phase: SyncPreparationPhase
-	traversal?: WebDAVTraversalProgress
+	traversal?: RemoteTraversalProgress
 }
 
 const syncPreparationProgress = new Subject<SyncPreparationProgress>()

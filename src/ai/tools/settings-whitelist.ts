@@ -1,7 +1,7 @@
 import { parse as bytesParse } from 'bytes-iec'
 import { clamp, isNil, isNumber } from 'lodash-es'
 import i18n from '~/i18n'
-import type { NutstoreSettings } from '~/settings'
+import type { PluginSettings } from '~/settings'
 import type { GlobFilterRule } from '~/utils/glob-match'
 import GlobMatch, { isVoidGlobMatchOptions } from '~/utils/glob-match'
 import { normalizeByteSizeInput } from '~/utils/download-chunk-size'
@@ -29,8 +29,8 @@ export type SettingsWhitelistFile = {
 	realtimeSync?: boolean
 	confirmBeforeSync?: boolean
 	confirmBeforeDeleteInAutoSync?: boolean
-	syncMode?: NutstoreSettings['syncMode']
-	conflictStrategy?: NutstoreSettings['conflictStrategy']
+	syncMode?: PluginSettings['syncMode']
+	conflictStrategy?: PluginSettings['conflictStrategy']
 	configDirSyncMode?: 'none' | 'bookmarks' | 'all'
 	language?: 'zh' | 'en' | ''
 }
@@ -43,8 +43,8 @@ export type NormalizedSettingsPatch = {
 	realtimeSync?: boolean
 	confirmBeforeSync?: boolean
 	confirmBeforeDeleteInAutoSync?: boolean
-	syncMode?: NutstoreSettings['syncMode']
-	conflictStrategy?: NutstoreSettings['conflictStrategy']
+	syncMode?: PluginSettings['syncMode']
+	conflictStrategy?: PluginSettings['conflictStrategy']
 	configDirSyncMode?: 'none' | 'bookmarks' | 'all'
 	language?: 'zh' | 'en' | ''
 }
@@ -54,7 +54,7 @@ export type SettingsParseResult =
 	| { ok: false; error: string }
 
 export function applyNormalizedSettingsPatch(
-	settings: NutstoreSettings,
+	settings: PluginSettings,
 	patch: NormalizedSettingsPatch,
 ) {
 	if (patch.filterRules !== undefined) {
@@ -376,7 +376,7 @@ export function parseSettingsWhitelistJson(text: string): SettingsParseResult {
 		if (error) {
 			return { ok: false, error }
 		}
-		patch.syncMode = value as NutstoreSettings['syncMode']
+		patch.syncMode = value as PluginSettings['syncMode']
 	}
 	if (!isNil(parsed.conflictStrategy)) {
 		const { value, error } = parseEnum(
@@ -388,7 +388,7 @@ export function parseSettingsWhitelistJson(text: string): SettingsParseResult {
 		if (error) {
 			return { ok: false, error }
 		}
-		patch.conflictStrategy = value as NutstoreSettings['conflictStrategy']
+		patch.conflictStrategy = value as PluginSettings['conflictStrategy']
 	}
 	if (!isNil(parsed.configDirSyncMode)) {
 		const { value, error } = parseEnum(
@@ -427,7 +427,7 @@ export function parseSettingsWhitelistJson(text: string): SettingsParseResult {
 	return { ok: true, patch, text }
 }
 
-export function serializeSettingsWhitelist(settings: NutstoreSettings): string {
+export function serializeSettingsWhitelist(settings: PluginSettings): string {
 	const file: SettingsWhitelistFile = {
 		filterRules: {
 			rules: (settings.filterRules?.rules ?? []).map((rule) => ({
@@ -481,7 +481,7 @@ function areByteSizesEqual(current: string | undefined, next: string) {
 }
 
 export function getChangedSettingsPatch(
-	settings: NutstoreSettings,
+	settings: PluginSettings,
 	patch: NormalizedSettingsPatch,
 ): NormalizedSettingsPatch {
 	const changes: NormalizedSettingsPatch = {}

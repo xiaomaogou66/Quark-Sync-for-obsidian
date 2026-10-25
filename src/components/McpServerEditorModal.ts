@@ -4,7 +4,7 @@ import { type HttpMcpServerConfig, isValidMcpServerName } from '~/ai/mcp/types'
 import i18n from '~/i18n'
 import { addClassTokens } from '~/utils/class-tokens'
 import logger from '~/utils/logger'
-import type NutstorePlugin from '..'
+import type QuarkSyncPlugin from '..'
 
 export interface McpServerDraft {
 	name: string
@@ -21,7 +21,7 @@ export default class McpServerEditorModal extends Modal {
 	private headerRows: HeaderRow[]
 
 	constructor(
-		plugin: NutstorePlugin,
+		plugin: QuarkSyncPlugin,
 		draft: McpServerDraft,
 		private onSave: (draft: McpServerDraft) => Promise<boolean> | boolean,
 		private isNew: boolean,

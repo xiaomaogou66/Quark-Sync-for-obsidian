@@ -9,7 +9,7 @@ interface HighlightRange {
 const setHighlightEffect = StateEffect.define<HighlightRange | null>()
 
 const highlightMark = Decoration.mark({
-	class: 'nutstore-chatbox-selection-highlight',
+	class: 'quark-chatbox-selection-highlight',
 })
 
 const highlightField = StateField.define<HighlightRange | null>({
@@ -42,7 +42,7 @@ const highlightField = StateField.define<HighlightRange | null>({
 })
 
 const highlightTheme = EditorView.baseTheme({
-	'.nutstore-chatbox-selection-highlight': {
+	'.quark-chatbox-selection-highlight': {
 		backgroundColor: 'var(--text-selection)',
 		borderRadius: '2px',
 	},

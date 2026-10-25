@@ -13,7 +13,7 @@ import {
 import i18n from '~/i18n'
 import { addClassTokens, removeClassTokens } from '~/utils/class-tokens'
 import logger from '~/utils/logger'
-import type NutstorePlugin from '..'
+import type QuarkSyncPlugin from '..'
 import ModelEditorModal from './ModelEditorModal'
 import ProviderCorsConfirmModal from './ProviderCorsConfirmModal'
 
@@ -37,7 +37,7 @@ export default class ProviderEditorModal extends Modal {
 	private cleanupModalMount?: () => void
 
 	constructor(
-		private plugin: NutstorePlugin,
+		private plugin: QuarkSyncPlugin,
 		provider: AIProviderConfig,
 		private onSave: (provider: AIProviderConfig) => Promise<boolean> | boolean,
 		private isNew: boolean,

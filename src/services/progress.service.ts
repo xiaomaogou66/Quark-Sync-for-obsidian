@@ -13,7 +13,7 @@ import {
 	UpdateSyncProgress,
 } from '../events'
 import i18n from '../i18n'
-import NutstorePlugin from '../index'
+import QuarkSyncPlugin from '../index'
 import { BaseService } from './service.interface'
 
 export class ProgressService extends BaseService {
@@ -32,7 +32,7 @@ export class ProgressService extends BaseService {
 
 	private subscriptions: { unsubscribe: () => void }[] = []
 
-	constructor(private plugin: NutstorePlugin) {
+	constructor(private plugin: QuarkSyncPlugin) {
 		super()
 	}
 

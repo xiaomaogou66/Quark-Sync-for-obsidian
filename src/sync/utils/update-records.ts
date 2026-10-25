@@ -1,7 +1,7 @@
 import { chunk, debounce, isNil } from 'lodash-es'
 import { Vault } from 'obsidian'
 import { emitSyncUpdateMtimeProgress } from '~/events'
-import { NutstoreFileSystem } from '~/fs/nutstore'
+import { RemoteFileSystem } from '~/fs/remote'
 import { syncRecordKV } from '~/storage'
 import { blobStore } from '~/storage/blob'
 import type { SyncRecordModel } from '~/model/sync-record.model'
@@ -15,7 +15,7 @@ import { isSub } from '~/utils/is-sub'
 import { readLocalBinary } from '~/utils/local-vault-io'
 import { statVaultItem } from '~/utils/stat-vault-item'
 import { stdRemotePath } from '~/utils/std-remote-path'
-import type NutstorePlugin from '../..'
+import type QuarkSyncPlugin from '../..'
 import RemoveRemoteRecursivelyTask from '../tasks/remove-remote-recursively.task'
 
 export interface UpdateMtimeProgress {
@@ -36,7 +36,7 @@ export function countRecordUpdateOperations(tasks: BaseTask[]): number {
  * 批量更新同步记录的工具函数
  */
 export async function updateMtimeInRecord(
-	plugin: NutstorePlugin,
+	plugin: QuarkSyncPlugin,
 	vault: Vault,
 	remoteBaseDir: string,
 	tasks: BaseTask[],
@@ -60,11 +60,10 @@ export async function updateMtimeInRecord(
 		return
 	}
 
-	const token = await plugin.getToken()
-	const remoteFs = new NutstoreFileSystem({
+	const remoteFs = new RemoteFileSystem({
 		settings: plugin.settings,
 		vault,
-		token,
+		remote: await plugin.remoteBackendService.createRemoteFs(),
 		remoteAccountId: await plugin.getRemoteAccountId(),
 		remoteBaseDir: stdRemotePath(remoteBaseDir),
 	})

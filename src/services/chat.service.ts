@@ -69,7 +69,7 @@ import i18n from '~/i18n'
 import { chatMetaKV, chatSessionKV, type ChatMetaRecord } from '~/storage'
 import { createUniqueWordId } from '~/utils/create-id'
 import logger from '~/utils/logger'
-import type NutstorePlugin from '..'
+import type QuarkSyncPlugin from '..'
 import { BaseService } from './service.interface'
 
 type ChatboxActionHandlers = Pick<
@@ -120,7 +120,7 @@ export default class ChatService extends BaseService {
 	private readonly compactionCoordinator: ContextCompactionCoordinator
 	private readonly skillRepository: SkillRepository
 
-	constructor(private plugin: NutstorePlugin) {
+	constructor(private plugin: QuarkSyncPlugin) {
 		super()
 		this.skillRepository = new SkillRepository(plugin.app)
 		this.selection = new Selection(

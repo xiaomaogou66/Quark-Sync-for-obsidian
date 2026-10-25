@@ -23,7 +23,7 @@ Obsidian.
 Chat sessions persist as individual JSON files in the vault:
 
 ```text
-.agents/nutstore-sync/
+.agents/quark-sync/
 ├── chat-meta.json              # lightweight index of sessions and titles
 └── sessions/<id>.json           # one full ChatSession per file
 ```

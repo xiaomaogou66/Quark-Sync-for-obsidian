@@ -1,12 +1,12 @@
 @unocss;
 
-.workspace-leaf-content[data-type='nutstore-sync-chatbox'] .view-content {
+.workspace-leaf-content[data-type='quark-sync-chatbox'] .view-content {
 	padding-right: 0;
 	padding-left: 0;
 	padding-top: 0;
 }
 
-@keyframes nutstore-sync-spin {
+@keyframes quark-sync-spin {
 	from {
 		transform: rotate(0deg);
 	}
@@ -15,8 +15,8 @@
 	}
 }
 
-.nutstore-sync-spinning {
-	animation: nutstore-sync-spin 2s linear infinite;
+.quark-sync-spinning {
+	animation: quark-sync-spin 2s linear infinite;
 }
 
 .modal.sync-confirm-modal {
@@ -34,16 +34,16 @@
 	flex: 0 0 auto;
 }
 
-.modal.nutstore-sync-progress-modal {
+.modal.quark-sync-progress-modal {
 	width: min(560px, calc(100vw - 2rem));
 	max-height: calc(100% - 2rem);
 }
 
-.modal-content.nutstore-sync-progress-modal__content {
+.modal-content.quark-sync-progress-modal__content {
 	padding: 0;
 }
 
-.nutstore-sync-progress {
+.quark-sync-progress {
 	display: flex;
 	flex-direction: column;
 	gap: 1rem;
@@ -51,14 +51,14 @@
 	max-height: 75vh;
 }
 
-.modal.nutstore-sync-progress-modal .modal-header {
+.modal.quark-sync-progress-modal .modal-header {
 	display: flex;
 	align-items: center;
 	padding: 1.25rem 1.5rem;
 }
 
-.modal.nutstore-sync-progress-modal
-	.modal-title.nutstore-sync-progress__native-title {
+.modal.quark-sync-progress-modal
+	.modal-title.quark-sync-progress__native-title {
 	display: flex;
 	align-items: center;
 	gap: 0.875rem;
@@ -67,7 +67,7 @@
 	margin: 0;
 }
 
-.nutstore-sync-progress__heading {
+.quark-sync-progress__heading {
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -79,12 +79,12 @@
 	color: var(--interactive-accent);
 }
 
-.nutstore-sync-progress__status-icon--preparing,
-.nutstore-sync-progress__status-icon--syncing,
-.nutstore-sync-progress__status-icon--complete,
-.nutstore-sync-progress__status-icon--warning,
-.nutstore-sync-progress__status-icon--error,
-.nutstore-sync-progress__status-icon--cancelled {
+.quark-sync-progress__status-icon--preparing,
+.quark-sync-progress__status-icon--syncing,
+.quark-sync-progress__status-icon--complete,
+.quark-sync-progress__status-icon--warning,
+.quark-sync-progress__status-icon--error,
+.quark-sync-progress__status-icon--cancelled {
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -92,35 +92,35 @@
 	height: 1.375rem;
 }
 
-.nutstore-sync-progress__status-icon--preparing,
-.nutstore-sync-progress__status-icon--syncing {
+.quark-sync-progress__status-icon--preparing,
+.quark-sync-progress__status-icon--syncing {
 	color: var(--interactive-accent);
 }
 
-.nutstore-sync-progress__status-icon--complete {
+.quark-sync-progress__status-icon--complete {
 	color: var(--text-success);
 }
 
-.nutstore-sync-progress__status-icon--warning {
+.quark-sync-progress__status-icon--warning {
 	color: var(--text-warning);
 }
 
-.nutstore-sync-progress__status-icon--error,
-.nutstore-sync-progress__status-icon--cancelled {
+.quark-sync-progress__status-icon--error,
+.quark-sync-progress__status-icon--cancelled {
 	color: var(--text-error);
 }
 
-.nutstore-sync-progress__status-icon--preparing svg,
-.nutstore-sync-progress__status-icon--syncing svg,
-.nutstore-sync-progress__status-icon--complete svg,
-.nutstore-sync-progress__status-icon--warning svg,
-.nutstore-sync-progress__status-icon--error svg,
-.nutstore-sync-progress__status-icon--cancelled svg {
+.quark-sync-progress__status-icon--preparing svg,
+.quark-sync-progress__status-icon--syncing svg,
+.quark-sync-progress__status-icon--complete svg,
+.quark-sync-progress__status-icon--warning svg,
+.quark-sync-progress__status-icon--error svg,
+.quark-sync-progress__status-icon--cancelled svg {
 	width: 1.375rem;
 	height: 1.375rem;
 }
 
-.nutstore-sync-progress__title-text {
+.quark-sync-progress__title-text {
 	flex: 1;
 	min-width: 0;
 	overflow: hidden;
@@ -131,14 +131,14 @@
 	white-space: nowrap;
 }
 
-.nutstore-sync-progress__status {
+.quark-sync-progress__status {
 	display: flex;
 	flex-direction: column;
 	gap: 0.25rem;
 	margin: 0 1.5rem;
 }
 
-.nutstore-sync-progress__current-file {
+.quark-sync-progress__current-file {
 	overflow: hidden;
 	color: var(--text-muted);
 	font-size: var(--font-ui-small);
@@ -146,13 +146,13 @@
 	white-space: nowrap;
 }
 
-.nutstore-sync-progress__summary {
+.quark-sync-progress__summary {
 	color: var(--text-muted);
 	font-size: var(--font-ui-small);
 	line-height: 1.5;
 }
 
-.nutstore-sync-progress__card {
+.quark-sync-progress__card {
 	display: flex;
 	flex-direction: column;
 	gap: 0.625rem;
@@ -163,19 +163,19 @@
 	background: color-mix(in srgb, var(--background-secondary) 38%, transparent);
 }
 
-.nutstore-sync-progress__label {
+.quark-sync-progress__label {
 	font-weight: 600;
 	color: var(--text-muted);
 	font-size: var(--font-ui-small);
 }
 
-.nutstore-sync-progress__primary {
+.quark-sync-progress__primary {
 	display: flex;
 	flex-direction: column;
 	gap: 0.625rem;
 }
 
-.nutstore-sync-progress__bar-container {
+.quark-sync-progress__bar-container {
 	position: relative;
 	height: 1.25rem;
 	overflow: hidden;
@@ -183,7 +183,7 @@
 	background: var(--background-secondary);
 }
 
-.nutstore-sync-progress__bar {
+.quark-sync-progress__bar {
 	position: absolute;
 	inset-block: 0;
 	left: 0;
@@ -193,7 +193,7 @@
 	transition: width 250ms ease;
 }
 
-.nutstore-sync-progress__bar-label {
+.quark-sync-progress__bar-label {
 	position: absolute;
 	inset: 0;
 	display: flex;
@@ -204,7 +204,7 @@
 	font-weight: 600;
 }
 
-.nutstore-sync-progress__cache {
+.quark-sync-progress__cache {
 	display: flex;
 	flex-direction: column;
 	margin-top: 0.125rem;
@@ -215,7 +215,7 @@
 	font-size: var(--font-ui-small);
 }
 
-.nutstore-sync-progress__files {
+.quark-sync-progress__files {
 	display: flex;
 	flex: 1 1 auto;
 	flex-direction: column;
@@ -225,7 +225,7 @@
 	overflow: hidden;
 }
 
-.nutstore-sync-progress__files-list {
+.quark-sync-progress__files-list {
 	flex: 1 1 auto;
 	min-height: 5rem;
 	max-height: 32vh;
@@ -236,7 +236,7 @@
 	background: color-mix(in srgb, var(--background-secondary) 24%, transparent);
 }
 
-.nutstore-sync-progress__footer {
+.quark-sync-progress__footer {
 	display: flex;
 	justify-content: flex-end;
 	gap: 0.5rem;
@@ -245,7 +245,7 @@
 	border-top: 1px solid var(--background-modifier-border);
 }
 
-.nutstore-sync-progress__footer button {
+.quark-sync-progress__footer button {
 	min-width: 5.5rem;
 }
 
@@ -876,7 +876,7 @@
 	z-index: 230 !important;
 }
 
-@keyframes nutstore-sync-progress-indeterminate {
+@keyframes quark-sync-progress-indeterminate {
 	from {
 		transform: translateX(-100%);
 	}
@@ -886,6 +886,6 @@
 	}
 }
 
-.nutstore-sync-progress-indeterminate {
-	animation: nutstore-sync-progress-indeterminate 1.4s ease-in-out infinite;
+.quark-sync-progress-indeterminate {
+	animation: quark-sync-progress-indeterminate 1.4s ease-in-out infinite;
 }

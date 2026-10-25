@@ -20,7 +20,7 @@ import { emitNutstoreLlmGatewayAuth } from '~/events/nutstore-llm-gateway-auth'
 import i18n from '~/i18n'
 import logger from '~/utils/logger'
 import { BaseService } from './service.interface'
-import type NutstorePlugin from '..'
+import type QuarkSyncPlugin from '..'
 
 const TOKEN_REFRESH_SKEW_MS = 60 * 1000
 const TOKEN_REFRESH_INTERVAL_MS = 60 * 1000
@@ -140,7 +140,7 @@ export default class NutstoreLlmGatewayService extends BaseService {
 	private refreshSubscription: Subscription | null = null
 	private authorizationPollingSubscription: Subscription | null = null
 
-	constructor(private plugin: NutstorePlugin) {
+	constructor(private plugin: QuarkSyncPlugin) {
 		super()
 	}
 

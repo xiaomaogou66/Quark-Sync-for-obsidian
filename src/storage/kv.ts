@@ -5,7 +5,7 @@ import { StatModel } from '~/model/stat.model'
 import { SyncRecordModel } from '~/model/sync-record.model'
 import useStorage from './use-storage'
 
-const DB_NAME = 'Nutstore_Plugin_Cache'
+const DB_NAME = 'QuarkSync_Plugin_Cache'
 
 function createRecoverableStorage<T>(storeName: string) {
 	return useStorage<T>({
@@ -23,14 +23,14 @@ export const syncRecordKV =
 
 export const blobKV = createRecoverableStorage<Blob>('base_blob_store')
 
-export interface TraverseWebDAVCache {
+export interface RemoteTraversalCache {
 	rootCursor: string
 	queue: string[]
 	nodes: Record<string, StatModel[]>
 }
 
-export const traverseWebDAVKV = createRecoverableStorage<TraverseWebDAVCache>(
-	'traverse_webdav_cache',
+export const remoteTraversalKV = createRecoverableStorage<RemoteTraversalCache>(
+	'remote_traversal_cache',
 )
 
 /** path → backend folder id, used by fid-addressed backends such as Quark. */

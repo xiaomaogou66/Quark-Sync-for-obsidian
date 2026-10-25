@@ -84,7 +84,7 @@ describe('buildRemoteWalkResults', () => {
 			traversedStats: [
 				file('/Vault/a.md'),
 				file(
-					'/Vault/.obsidian/plugins/nutstore-sync/cache/ObsidianNutstoreSync.SyncCache.v1',
+					'/Vault/.obsidian/plugins/quark-sync/cache/ObsidianNutstoreSync.SyncCache.v1',
 				),
 			],
 			remoteBaseDir: '/Vault',
@@ -93,7 +93,7 @@ describe('buildRemoteWalkResults', () => {
 		})
 
 		const cacheEntry = results.find((result) =>
-			result.stat.path.includes('nutstore-sync-cache'),
+			result.stat.path.includes('quark-sync-cache'),
 		)
 		if (cacheEntry) {
 			expect(cacheEntry.ignored).toBe(true)

@@ -21,7 +21,7 @@ import {
 	toggleClassTokens,
 } from '~/utils/class-tokens'
 import logger from '~/utils/logger'
-import type NutstorePlugin from '..'
+import type QuarkSyncPlugin from '..'
 import NutstoreLlmGatewayBetaConfirmModal from './NutstoreLlmGatewayBetaConfirmModal'
 import ProviderEditorModal from './ProviderEditorModal'
 import ProviderModelsUpdateConfirmModal from './ProviderModelsUpdateConfirmModal'
@@ -43,7 +43,7 @@ export default class ProvidersManagerModal extends Modal {
 	}
 
 	constructor(
-		private plugin: NutstorePlugin,
+		private plugin: QuarkSyncPlugin,
 		private onChanged: () => Promise<void> | void,
 	) {
 		super(plugin.app)

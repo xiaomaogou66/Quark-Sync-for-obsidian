@@ -11,11 +11,11 @@ import type { AIProviderConfig } from '~/ai/core/types'
 import type { ChatState } from '~/ai/chat/runtime/chat-state'
 import i18n from '~/i18n'
 import logger from '~/utils/logger'
-import type { NutstoreSettings } from '~/settings'
+import type { PluginSettings } from '~/settings'
 
 export class Selection {
 	constructor(
-		private getSettings: () => NutstoreSettings['ai'],
+		private getSettings: () => PluginSettings['ai'],
 		private state: ChatState,
 		private notify: () => void,
 		private persistSession: (session: ChatSession) => Promise<void>,

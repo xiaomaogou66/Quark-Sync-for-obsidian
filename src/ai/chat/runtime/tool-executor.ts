@@ -34,7 +34,7 @@ import type {
 	SettingsUpdater,
 } from '~/ai/tools/tool-context'
 import type McpService from '~/services/mcp.service'
-import type { NutstoreSettings } from '~/settings'
+import type { PluginSettings } from '~/settings'
 
 export interface StableToolsContext {
 	app: App
@@ -54,7 +54,7 @@ export class ToolExecutor {
 
 	constructor(
 		private app: App,
-		private getSettings: () => NutstoreSettings['ai'],
+		private getSettings: () => PluginSettings['ai'],
 		private state: ChatState,
 		private runtimeStates: RuntimeStates,
 		private mcpService: McpService,

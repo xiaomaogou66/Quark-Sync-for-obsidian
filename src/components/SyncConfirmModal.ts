@@ -6,8 +6,8 @@ import {
 	getSyncPolicyDescI18nKey,
 	getSyncPolicyNameI18nKey,
 	SyncPolicy,
-	type NutstoreLocalSettings,
-	type NutstoreSettings,
+	type PluginLocalSettings,
+	type PluginSettings,
 } from '../settings'
 
 export default class SyncConfirmModal extends Modal {
@@ -15,8 +15,8 @@ export default class SyncConfirmModal extends Modal {
 
 	constructor(
 		app: App,
-		private settings: NutstoreSettings,
-		localSettings: NutstoreLocalSettings,
+		private settings: PluginSettings,
+		localSettings: PluginLocalSettings,
 		private onConfirm: (policy: SyncPolicy) => void,
 	) {
 		super(app)
@@ -84,7 +84,7 @@ export default class SyncConfirmModal extends Modal {
 			const radio = option.createEl('input', {
 				type: 'radio',
 				value: policy,
-				attr: { name: 'nutstore-sync-policy' },
+				attr: { name: 'quark-sync-policy' },
 			})
 			radio.checked = policy === this.selectedPolicy
 			radio.addEventListener('change', () => {

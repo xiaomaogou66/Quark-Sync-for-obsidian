@@ -6,16 +6,16 @@ import {
 } from './builtin'
 
 describe('built-in Skills', () => {
-	it('ships a self-consistent Nutstore Sync guide', () => {
+	it('ships a self-consistent Quark Sync guide', () => {
 		const skill = BUILTIN_SKILLS.find(
-			(item) => item.name === 'nutstore-sync-guide',
+			(item) => item.name === 'quark-sync-guide',
 		)
 
 		expect(skill).toBeDefined()
 		expect(skill!.path).toBe(
-			`${BUILTIN_SKILLS_ROOT}/nutstore-sync-guide/SKILL.md`,
+			`${BUILTIN_SKILLS_ROOT}/quark-sync-guide/SKILL.md`,
 		)
-		expect(skill!.content).toContain('\nname: nutstore-sync-guide\n')
+		expect(skill!.content).toContain('\nname: quark-sync-guide\n')
 		expect(skill!.content).toContain(`description: ${skill!.description}\n`)
 		expect(skill!.content).toContain('MCP server configuration')
 		expect(skill!.resources?.map((resource) => resource.path)).toEqual([
@@ -27,19 +27,19 @@ describe('built-in Skills', () => {
 		])
 	})
 
-	it('mounts Nutstore Sync references below the guide', async () => {
+	it('mounts Quark Sync references below the guide', async () => {
 		const fs = await createBuiltinSkillsFs()
 		const [mcpContent, settingsContent, syncContent] = await Promise.all([
-			fs.readFile('/nutstore-sync-guide/references/mcp-servers.md'),
-			fs.readFile('/nutstore-sync-guide/references/settings.md'),
-			fs.readFile('/nutstore-sync-guide/references/sync.md'),
+			fs.readFile('/quark-sync-guide/references/mcp-servers.md'),
+			fs.readFile('/quark-sync-guide/references/settings.md'),
+			fs.readFile('/quark-sync-guide/references/sync.md'),
 		])
 
 		expect(mcpContent).toContain('MCP Server Configuration')
-		expect(mcpContent).toContain('/.agents/nutstore-sync/mcp.json')
+		expect(mcpContent).toContain('/.agents/quark-sync/mcp.json')
 		expect(settingsContent).toContain('Plugin Settings File')
 		expect(settingsContent).toContain('filterRules')
-		expect(settingsContent).toContain('/.config/nutstore-sync/settings.json')
+		expect(settingsContent).toContain('/.config/quark-sync/settings.json')
 		expect(syncContent).toContain('Sync policies')
 		expect(syncContent).toContain('Diff3')
 	})

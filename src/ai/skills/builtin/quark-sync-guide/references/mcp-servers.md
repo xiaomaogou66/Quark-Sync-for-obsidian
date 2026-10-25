@@ -5,9 +5,9 @@ server.
 
 ## Configuration workflow
 
-1. The file is a real vault file at `.agents/nutstore-sync/mcp.json`, visible
-   to the tools at `/.agents/nutstore-sync/mcp.json`.
-2. Read the file first when it exists: `cat /.agents/nutstore-sync/mcp.json`.
+1. The file is a real vault file at `.agents/quark-sync/mcp.json`, visible
+   to the tools at `/.agents/quark-sync/mcp.json`.
+2. Read the file first when it exists: `cat /.agents/quark-sync/mcp.json`.
    Preserve unrelated server entries unless the user asks to remove them.
 3. The file is a JSON object with a top-level `mcpServers` map. Each server
    name must use letters, numbers, hyphens, or underscores, and must start with

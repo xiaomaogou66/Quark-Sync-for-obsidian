@@ -10,7 +10,7 @@ import { type SyncPolicy } from '~/settings'
 import logger from '~/utils/logger'
 import waitUntil from '~/utils/wait-until'
 import { BaseService } from './service.interface'
-import type NutstorePlugin from '..'
+import type QuarkSyncPlugin from '..'
 
 export interface SyncOptions {
 	mode: SyncStartMode
@@ -22,7 +22,7 @@ export default class SyncExecutorService extends BaseService {
 	private inFlight = false
 	private pendingAutoSync = false
 
-	constructor(private plugin: NutstorePlugin) {
+	constructor(private plugin: QuarkSyncPlugin) {
 		super()
 	}
 
@@ -82,7 +82,6 @@ export default class SyncExecutorService extends BaseService {
 			logger.info('Sync starting with settings:', {
 				triggerMode: getSyncTriggerLabel(options.mode),
 				syncPolicy: getSyncPolicyLabel(syncPolicy),
-				loginMode: this.plugin.settings.loginMode,
 				remoteBaseDir: this.plugin.remoteBaseDir,
 				syncMode: this.plugin.settings.syncMode,
 				realtimeSync: this.plugin.settings.realtimeSync,
@@ -96,10 +95,9 @@ export default class SyncExecutorService extends BaseService {
 
 			await waitUntil(() => this.plugin.isSyncing === false, 500)
 
-			const remote = await this.plugin.webDAVService.createRemoteFs()
+			const remote = await this.plugin.remoteBackendService.createRemoteFs()
 			const sync = new NutstoreSync(this.plugin, {
 				vault: this.plugin.app.vault,
-				token: await this.plugin.getToken(),
 				remoteAccountId: await this.plugin.getRemoteAccountId(),
 				remoteBaseDir: this.plugin.remoteBaseDir,
 				remote,

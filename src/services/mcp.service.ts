@@ -19,7 +19,7 @@ import { formatMcpToolResult } from '~/ai/mcp/result-artifact'
 import { obsidianFetch } from '~/ai/transport/obsidian-fetch'
 import logger from '~/utils/logger'
 import { mkdirsVault } from '~/utils/mkdirs-vault'
-import type NutstorePlugin from '..'
+import type QuarkSyncPlugin from '..'
 import { BaseService } from './service.interface'
 
 export type McpServerStatus = 'connecting' | 'connected' | 'error'
@@ -65,7 +65,7 @@ export default class McpService extends BaseService {
 	private readonly clients = new Map<string, ConnectedMcpServer>()
 	private reloadPromise?: Promise<void>
 
-	constructor(private plugin: NutstorePlugin) {
+	constructor(private plugin: QuarkSyncPlugin) {
 		super()
 	}
 
@@ -227,7 +227,7 @@ export default class McpService extends BaseService {
 		}
 		const client = new Client(
 			{
-				name: 'obsidian-nutstore-sync',
+				name: 'obsidian-quark-sync',
 				version: this.plugin.manifest.version,
 			},
 			{ jsonSchemaValidator: noopJsonSchemaValidator },
