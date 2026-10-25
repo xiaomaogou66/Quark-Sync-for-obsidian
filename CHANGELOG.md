@@ -2,6 +2,23 @@
 
 本项目的所有重要更改都将记录在此文件中。All notable changes to this project will be documented in this file.
 
+## [1.5.1] - 2026-10-25
+
+本版本聚焦夸克网盘/网关的同步速度与稳定性。 | This release focuses on sync speed and stability for the Quark backends.
+
+- 新增 WebDAV 网关后端（Alist / OpenList / quarkdrive-webdav），无需夸克开放平台凭据即可同步。 | Added a WebDAV gateway backend (Alist / OpenList / quarkdrive-webdav) that needs no Quark open-platform credentials.
+- 新增可视化远端目录选择器：面包屑导航、新建目录、路径失效自动回退，并可用「选择远端同步目录」命令打开。 | Added a visual remote folder picker with breadcrumbs, folder creation and automatic fallback to the root, also exposed as a command.
+- 修复 WebDAV 同步卡在「正在扫描远端目录」：遍历与传输层各自在同一个单槽限速器上排队造成死锁。 | Fixed WebDAV sync hanging at "scanning remote directory": the walk and the transport queued on the same single-slot limiter, deadlocking.
+- 远端遍历改为并行（默认 4 个 worker，可设置），列目录耗时大幅下降。 | The remote walk now runs a configurable worker pool (default 4), cutting traversal time sharply.
+- 相邻的上传/下载任务并行执行（默认 3，可按路径冲突自动分组）。 | Adjacent upload/download tasks now run in parallel (default 3, grouped by path collisions).
+- 遍历时直接跳过已被过滤规则排除的目录，不再为其浪费往返请求。 | Excluded directories are pruned from the walk instead of being listed and then dropped.
+- 新增「快速同步」（默认关闭）：在设定间隔内复用上次遍历快照，代价是延迟发现其他设备的云端变更。 | Added opt-in fast sync: reuse the last snapshot within a configurable interval, trading remote-change latency for startup time.
+- 只有真正走完的遍历才会被标记为可复用快照，避免中断后隐藏云端变更；记录回写时强制全量，避免刚上传的文件丢失同步记录。 | Only a finished walk is trusted as a snapshot, and the per-chunk record walk always re-lists so freshly uploaded files still get a sync record.
+- 自动同步也置位同步状态并发出准备事件，泄漏的同步标志会在超时后自愈；删除确认与 UI 状态不再与实际运行状态不一致。 | Auto syncs also own the sync state and emit the preparing event; a leaked flag self-heals after a timeout.
+- 默认忽略 `.venv`、`__pycache__`、`*.pyc` 及常见 Python 缓存目录（仅对未自定义过滤规则的配置生效）。 | Tooling artefacts (`.venv`, `__pycache__`, `*.pyc`, common caches) are ignored by default for configs that never customised their filter rules.
+- 新增主机侧验收脚本 `pnpm test:obsidian:host`，用本机 Obsidian 起临时 vault 做端到端检查。 | Added a host-side acceptance runner that drives a throwaway vault in the local Obsidian.
+- README 重写：补充 Alist / OpenList 官方入口与挂载步骤。 | Rewrote the README with official Alist / OpenList links and mount steps.
+
 ## [1.5.0] - 2026-09-08
 
 - 引入子代理（Subagent）设置、模型选择回退机制及长期记忆归档功能。 | Introduced subagent settings, model selection resolution with fallback, and long-term memory archive injection.

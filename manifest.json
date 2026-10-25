@@ -1,9 +1,9 @@
 {
 	"id": "quark-sync",
 	"name": "Quark Sync",
-	"version": "1.5.0",
+	"version": "1.5.1",
 	"minAppVersion": "1.7.2",
-	"description": "Sync your vault with Quark Drive (夸克网盘) through the Quark open platform.",
+	"description": "Sync your vault with Quark Drive (\u5938\u514b\u7f51\u76d8) through the Quark open platform.",
 	"author": "nutstore",
 	"authorUrl": "https://github.com/nutstore/obsidian-nutstore-sync",
 	"isDesktopOnly": false
