@@ -37,7 +37,6 @@ export default class SettingsService extends BaseService {
 		await this.loadSettings()
 		await this.loadLocalSettings()
 		this.plugin.modelsPresetService.initializeFromLocalSettings()
-		await this.plugin.nutstoreLlmGatewayService.initializeProviderFromStoredAuth()
 	}
 
 	override onunload() {
@@ -92,7 +91,6 @@ export default class SettingsService extends BaseService {
 		this.plugin.settings.ai.subagents.memory ??= { enabled: false }
 		this.plugin.settings.ai.subagents.explorer.enabled ??= false
 		this.plugin.settings.ai.subagents.memory.enabled ??= false
-		this.plugin.settings.ai.nutstoreLlmGateway ??= {}
 		if (Array.isArray(this.plugin.settings.ai.providers)) {
 			this.plugin.settings.ai.providers = {}
 		}
@@ -183,8 +181,7 @@ export default class SettingsService extends BaseService {
 			await this.loadSettings()
 			await this.loadLocalSettings()
 			this.plugin.modelsPresetService.initializeFromLocalSettings()
-			await this.plugin.nutstoreLlmGatewayService.initializeProviderFromStoredAuth()
-			await this.plugin.i18nService.update()
+				await this.plugin.i18nService.update()
 			await this.plugin.chatService.handleSettingsChanged()
 			await this.plugin.aiConflictResolverService.refresh()
 			await this.plugin.scheduledSyncService.updateInterval()

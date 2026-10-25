@@ -232,10 +232,7 @@ export default class AISettings extends BaseSettings {
 	}
 
 	private listUserManagedProviders() {
-		return listProviders(this.plugin.settings.ai.providers).filter(
-			(provider) =>
-				!this.plugin.nutstoreLlmGatewayService.isManagedProvider(provider),
-		)
+		return listProviders(this.plugin.settings.ai.providers)
 	}
 
 	private async persist(showNotice: boolean = true) {

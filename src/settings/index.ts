@@ -1,10 +1,8 @@
 import { App, PluginSettingTab, Setting } from 'obsidian'
 import { Subscription } from 'rxjs'
 import { AIProviderConfigs, AIProviderDefinitions } from '~/ai/core/types'
-import { onNutstoreLlmGatewayAuth } from '~/events/nutstore-llm-gateway-auth'
 import i18n from '~/i18n'
 import type QuarkSyncPlugin from '~/index'
-import type { NutstoreLlmGatewayAuthSettings } from '~/services/nutstore-llm-gateway.service'
 import { ConflictStrategy } from '~/sync/tasks/conflict-resolve.task'
 import { DEFAULT_MOBILE_APP_DOWNLOAD_FILE_CHUNK_SIZE } from '~/utils/download-chunk-size'
 import { GlobFilterRule } from '~/utils/glob-match'
@@ -162,7 +160,6 @@ export interface PluginSettings {
 			explorer: SubagentSettings
 			memory: SubagentSettings
 		}
-		nutstoreLlmGateway?: NutstoreLlmGatewayAuthSettings
 	}
 	configDirSyncMode?: 'none' | 'bookmarks' | 'all'
 }
@@ -236,7 +233,6 @@ export const DEFAULT_SETTINGS: PluginSettings = {
 			explorer: { enabled: false },
 			memory: { enabled: false },
 		},
-		nutstoreLlmGateway: {},
 	},
 	configDirSyncMode: 'none',
 }
@@ -271,11 +267,7 @@ export class QuarkSyncSettingTab extends PluginSettingTab {
 	private activeTab: SettingsTabKey = 'sync'
 	private readonly tabSections: Record<SettingsTabKey, SettingsSectionEntry[]>
 
-	private readonly subscriptions: Subscription[] = [
-		onNutstoreLlmGatewayAuth().subscribe(() => {
-			void this.rerenderIfVisible()
-		}),
-	]
+	private readonly subscriptions: Subscription[] = []
 
 	constructor(app: App, plugin: QuarkSyncPlugin) {
 		super(app, plugin)

@@ -19,7 +19,6 @@ import I18nService from './services/i18n.service'
 import LoggerService from './services/logger.service'
 import McpService from './services/mcp.service'
 import ModelsPresetService from './services/models-preset.service'
-import NutstoreLlmGatewayService from './services/nutstore-llm-gateway.service'
 import { ProgressService } from './services/progress.service'
 import ProtocolService from './services/protocol.service'
 import RealtimeSyncService from './services/realtime-sync.service'
@@ -50,7 +49,6 @@ export default class QuarkSyncPlugin extends Plugin {
 	public loggerService = new LoggerService(this)
 	public mcpService = new McpService(this)
 	public modelsPresetService = new ModelsPresetService(this)
-	public nutstoreLlmGatewayService = new NutstoreLlmGatewayService(this)
 	public progressService = new ProgressService(this)
 	public protocolService = new ProtocolService(this)
 	public ribbonService = new SyncRibbonManager(this)
@@ -74,7 +72,6 @@ export default class QuarkSyncPlugin extends Plugin {
 		return [
 			this.loggerService,
 			this.modelsPresetService,
-			this.nutstoreLlmGatewayService,
 			this.remoteBackendService,
 			this.syncExecutorService,
 			this.gcService,

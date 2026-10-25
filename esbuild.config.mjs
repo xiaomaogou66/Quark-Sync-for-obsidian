@@ -29,9 +29,6 @@ const buildOptions = {
 		'@lezer/lr',
 	],
 	define: {
-		'process.env.LLM_GATEWAY_CLIENT_ID': JSON.stringify(
-			process.env.LLM_GATEWAY_CLIENT_ID || '',
-		),
 		'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || ''),
 		'process.env.PLUGIN_VERSION': JSON.stringify(pkgJson.version),
 	},

@@ -109,36 +109,6 @@
 				"name": "默认模型",
 				"desc": "新建对话时可选的默认模型"
 			},
-			"nutstoreLlmGateway": {
-				"name": "坚果云 AI（实验性）",
-				"providerName": "坚果云",
-				"desc": "授权后可使用坚果云提供的模型。",
-				"pendingDesc": "请在浏览器中完成授权，当前验证码：{{code}}",
-				"connectedDesc": "已授权，当前 {{count}} 个模型可用。",
-				"authorize": "授权",
-				"authorizing": "授权中...",
-				"openAuthorizationPage": "打开授权页",
-				"cancelAuthorization": "取消授权",
-				"authorized": "坚果云 AI 授权成功",
-				"disconnect": "断开",
-				"disconnected": "已断开坚果云 AI",
-				"refreshModels": "更新",
-				"betaModal": {
-					"title": "功能内测中",
-					"message": "坚果云 AI 目前处于内测阶段，尚未向所有用户开放。如果您不在内测名单中，授权后可能暂时无法使用相关功能，请继续等待，我们正在陆续开放中。",
-					"cancel": "取消",
-					"confirm": "我知道了，继续授权"
-				},
-				"errors": {
-					"authorizationRequired": "请先授权坚果云 AI",
-					"authorizationExpired": "坚果云 AI 授权已过期，请重新发起授权",
-					"authorizationFailed": "坚果云 AI 授权失败：{{code}} {{message}}",
-					"missingClientId": "缺少 LLM_GATEWAY_CLIENT_ID，无法启动坚果云 AI 授权",
-					"modelsFailed": "获取坚果云 AI 模型失败：{{status}}",
-					"emptyModels": "坚果云 AI 没有返回可用模型",
-					"refreshFailed": "刷新坚果云 AI 模型失败"
-				}
-			},
 			"providers": {
 				"name": "模型提供商",
 				"desc": "管理可用的 AI 模型提供商",
@@ -292,7 +262,6 @@
 				"duplicateModelId": "已存在相同 ID 的模型",
 				"emptyProviderId": "模型提供商名称不能为空",
 				"duplicateProviderId": "已存在相同名称的模型提供商",
-				"reservedProviderId": "该模型提供商名称由坚果云 AI 保留，请使用其他名称",
 				"providerNotFoundForProtocolOpen": "未找到对应的模型提供商，可能已被删除或重命名：{{providerId}}",
 				"networkDisconnected": "网络连接不可用，请检查网络后重试。",
 				"browserCorsFallbackToBuiltinTransport": "浏览器跨域请求失败，已临时回退到内置请求方式。",

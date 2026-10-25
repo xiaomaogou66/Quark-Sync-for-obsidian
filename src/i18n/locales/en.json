@@ -154,36 +154,6 @@
 				"name": "Default model",
 				"desc": "Optional model selected for new chat sessions"
 			},
-			"nutstoreLlmGateway": {
-				"name": "Nutstore AI (Experimental)",
-				"providerName": "Nutstore",
-				"desc": "Authorize to use models provided by Nutstore.",
-				"pendingDesc": "Finish authorization in your browser. Current code: {{code}}",
-				"connectedDesc": "Authorized with {{count}} model(s) available.",
-				"authorize": "Authorize",
-				"authorizing": "Authorizing...",
-				"openAuthorizationPage": "Open authorization page",
-				"cancelAuthorization": "Cancel authorization",
-				"authorized": "Nutstore AI authorized",
-				"disconnect": "Disconnect",
-				"disconnected": "Nutstore AI disconnected",
-				"refreshModels": "Refresh",
-				"betaModal": {
-					"title": "Feature in Beta",
-					"message": "Nutstore AI is currently in beta and not yet available to all users. If you are not on the beta list, you may not be able to use the feature after authorizing. We are gradually opening access — please check back later.",
-					"cancel": "Cancel",
-					"confirm": "I understand, continue"
-				},
-				"errors": {
-					"authorizationRequired": "Authorize Nutstore AI first",
-					"authorizationExpired": "Nutstore AI authorization expired. Start again.",
-					"authorizationFailed": "Nutstore AI authorization failed: {{code}} {{message}}",
-					"missingClientId": "Missing LLM_GATEWAY_CLIENT_ID. Nutstore AI authorization cannot start.",
-					"modelsFailed": "Failed to fetch Nutstore AI models: {{status}}",
-					"emptyModels": "Nutstore AI did not return any available models",
-					"refreshFailed": "Failed to refresh Nutstore AI models"
-				}
-			},
 			"providers": {
 				"name": "Providers",
 				"desc": "Manage available AI providers",
@@ -337,7 +307,6 @@
 				"duplicateModelId": "A model with this ID already exists",
 				"emptyProviderId": "Provider name cannot be empty",
 				"duplicateProviderId": "A provider with this name already exists",
-				"reservedProviderId": "This provider name is reserved by Nutstore AI. Use another name.",
 				"providerNotFoundForProtocolOpen": "Provider not found. It may have been deleted or renamed: {{providerId}}",
 				"networkDisconnected": "Network connection unavailable. Check your connection and try again.",
 				"browserCorsFallbackToBuiltinTransport": "Browser CORS request failed. Temporarily fell back to the built-in request transport.",

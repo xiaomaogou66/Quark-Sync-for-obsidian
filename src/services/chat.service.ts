@@ -162,8 +162,9 @@ export default class ChatService extends BaseService {
 			() => this.notify(),
 			this.skillRepository,
 		)
-		const ensureProviderReady = (provider: AIProviderConfig) =>
-			plugin.nutstoreLlmGatewayService.ensureProviderReady(provider)
+		// The Nutstore AI gateway is gone; providers are used as configured, so
+		// this hook only remains to keep the runtime signature stable.
+		const ensureProviderReady = async (_provider: AIProviderConfig) => {}
 		const agentRunner = new AgentRunner(
 			this.toolExecutor,
 			this.store,
@@ -765,9 +766,6 @@ export default class ChatService extends BaseService {
 			try {
 				if (agent.timeline.length > 0) {
 					const provider = this.selection.getProviderOrThrow(session)
-					await this.plugin.nutstoreLlmGatewayService.ensureProviderReady(
-						provider,
-					)
 					if (abortController.signal.aborted) {
 						return
 					}
