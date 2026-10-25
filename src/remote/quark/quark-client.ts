@@ -55,6 +55,60 @@ export class QuarkApiError extends Error {
 	}
 }
 
+export class QuarkCredentialError extends Error {
+	constructor(
+		readonly field: keyof QuarkCredentials,
+		message: string,
+	) {
+		super(`[quark] ${field}: ${message}`)
+		this.name = 'QuarkCredentialError'
+	}
+}
+
+/**
+ * Guards the credential fields that end up in HTTP headers.
+ *
+ * HTTP header values must be ByteStrings, so a stray non-ASCII character (a
+ * `…` from the docs, a full-width colon, a line break from copy-paste) would
+ * otherwise fail deep inside the transport with an unreadable TypeError.
+ */
+export function assertQuarkCredentials(credentials: QuarkCredentials) {
+	for (const field of [
+		'appId',
+		'signKey',
+		'accessToken',
+	] as const) {
+		const value = credentials[field]
+		if (!value.trim()) {
+			throw new QuarkCredentialError(field, 'is empty')
+		}
+		for (let index = 0; index < value.length; index++) {
+			const code = value.charCodeAt(index)
+			if (code >= 0x21 && code <= 0x7e) {
+				continue
+			}
+			const char = value[index]
+			const hints: string[] = []
+			if (char === '…' || char === '…') {
+				hints.push('looks like the “…” placeholder from the docs')
+			}
+			if (code > 0x7e) {
+				hints.push('is not ASCII, check for full-width characters')
+			}
+			if (code <= 0x20) {
+				hints.push('is whitespace or a line break from copy-paste')
+			}
+			throw new QuarkCredentialError(
+				field,
+				`contains ${JSON.stringify(char)} (U+${code
+					.toString(16)
+					.toUpperCase()
+					.padStart(4, '0')}) at index ${index}, which ${hints.join(' and ') || 'is not allowed in a header'}`,
+			)
+		}
+	}
+}
+
 export class QuarkAuthError extends Error {
 	constructor(message = 'Quark access token expired, please re-authorize') {
 		super(message)
@@ -158,6 +212,8 @@ export class QuarkClient {
 		body?: unknown,
 		options: { signTimestamp?: string; allowRefresh?: boolean } = {},
 	): Promise<T> {
+		assertQuarkCredentials(this.credentials)
+
 		const timestamp = options.signTimestamp ?? this.now().toString()
 		const token = await this.sign(method, endpoint, timestamp)
 		const requestId = this.newRequestId()

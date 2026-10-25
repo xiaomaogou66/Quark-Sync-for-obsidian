@@ -21,9 +21,28 @@ import logger from '~/utils/logger'
  *   5. do the `x_pan_*` cookies work for downloads?
  */
 
-const appId = process.env.QUARK_APP_ID
-const signKey = process.env.QUARK_SIGN_KEY
-const accessToken = process.env.QUARK_ACCESS_TOKEN
+const appId = process.env.QUARK_APP_ID?.trim()
+const signKey = process.env.QUARK_SIGN_KEY?.trim()
+const accessToken = process.env.QUARK_ACCESS_TOKEN?.trim()
+
+/**
+ * Placeholder values (`QUARK_APP_ID=…`) are a very easy copy/paste mistake and
+ * would otherwise fail deep inside the HTTP layer.
+ */
+const PLACEHOLDER = /^[…<>.\s]+$/
+const placeholders = [
+	['QUARK_APP_ID', appId],
+	['QUARK_SIGN_KEY', signKey],
+	['QUARK_ACCESS_TOKEN', accessToken],
+].filter(([, value]) => !!value && PLACEHOLDER.test(value))
+if (placeholders.length > 0) {
+	throw new Error(
+		`These variables still hold placeholders, replace them with real values: ${placeholders
+			.map(([name]) => name)
+			.join(', ')}`,
+	)
+}
+
 const enabled =
 	process.env.QUARK_PROBE === '1' && !!appId && !!signKey && !!accessToken
 const rootFid = process.env.QUARK_PROBE_ROOT_FID ?? '0'
