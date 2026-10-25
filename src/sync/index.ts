@@ -234,6 +234,20 @@ export class NutstoreSync {
 						}
 						remoteBaseDirExits = await remote.exists(remoteBaseDir)
 					} else {
+						// A gateway that timed out while listing can answer 404 for a
+						// folder that does exist; creating it then fails with 405/409,
+						// which would abort the whole sync over a hiccup. Re-check
+						// before treating the failure as fatal.
+						const stillMissing = await remote
+							.exists(this.options.remoteBaseDir)
+							.catch(() => false)
+						if (!stillMissing) {
+							this.logger.warn(
+								'[Sync] remote base dir reported missing but exists; continuing',
+							)
+							remoteBaseDirExits = true
+							break
+						}
 						throw e
 					}
 				}
