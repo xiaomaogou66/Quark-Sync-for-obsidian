@@ -11,7 +11,6 @@ import type { SyncLogger } from '~/sync/log'
 import { shouldUseRemoteTraversalCache } from '~/utils/config-dir-rules'
 import { getRemoteTraversalDBKey } from '~/utils/get-db-key'
 import globalLogger from '~/utils/logger'
-import { QUARK_API_BASE } from '~/remote/quark/constants'
 import { stdRemotePath } from '~/utils/std-remote-path'
 import {
 	getRemoteSyncCacheDirPath,
@@ -182,7 +181,7 @@ export default class CacheServiceV1 extends BaseService {
 	private async getKVKey() {
 		return getRemoteTraversalDBKey(
 			await this.plugin.getRemoteAccountId(),
-			QUARK_API_BASE,
+			await this.plugin.remoteBackendService.getBackendEndpoint(),
 			this.plugin.remoteBaseDir,
 		)
 	}

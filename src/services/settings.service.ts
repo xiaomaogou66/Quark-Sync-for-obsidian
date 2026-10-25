@@ -13,6 +13,7 @@ import {
 	DEFAULT_LOCAL_SETTINGS,
 	DEFAULT_SETTINGS,
 	migrateQuarkSettings,
+	migrateWebDavSettings,
 	type PluginLocalSettings,
 	type PluginSettings,
 } from '~/settings'
@@ -51,6 +52,9 @@ export default class SettingsService extends BaseService {
 				: {}
 		this.plugin.settings = Object.assign({}, DEFAULT_SETTINGS, storedSettings)
 		this.plugin.settings.quark = migrateQuarkSettings(storedSettings.quark)
+		this.plugin.settings.webdav = migrateWebDavSettings(storedSettings.webdav)
+		this.plugin.settings.remoteProvider =
+			storedSettings.remoteProvider === 'webdav' ? 'webdav' : 'quark'
 		if (
 			storedSettings?.conflictStrategy !== undefined &&
 			!Object.values(ConflictStrategy).includes(storedSettings.conflictStrategy)

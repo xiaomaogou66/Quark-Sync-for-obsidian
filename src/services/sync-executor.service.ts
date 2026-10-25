@@ -101,6 +101,8 @@ export default class SyncExecutorService extends BaseService {
 				remoteAccountId: await this.plugin.getRemoteAccountId(),
 				remoteBaseDir: this.plugin.remoteBaseDir,
 				remote,
+				backendEndpoint:
+					await this.plugin.remoteBackendService.getBackendEndpoint(),
 			})
 
 			result = await sync.start({

@@ -115,6 +115,7 @@ export class NutstoreSync {
 			remoteAccountId: string
 			remoteBaseDir: string
 			remote: RemoteFs
+			backendEndpoint?: string
 		},
 	) {
 		this.options = Object.freeze(this.options)
@@ -124,6 +125,7 @@ export class NutstoreSync {
 			settings: plugin.settings,
 			remote: this.options.remote,
 			remoteAccountId: this.options.remoteAccountId,
+			backendEndpoint: this.options.backendEndpoint,
 			remoteBaseDir: this.options.remoteBaseDir,
 			filterRules,
 			onTraversalProgress: (traversal: RemoteTraversalProgress) => {

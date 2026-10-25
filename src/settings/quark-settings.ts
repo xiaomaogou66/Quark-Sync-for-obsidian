@@ -11,6 +11,40 @@
  * old fid before uploading, which is safer against duplicate entries but puts
  * the old version in Quark's recycle bin.
  */
+/**
+ * Where the plugin reads/writes the vault:
+ * - `quark`: the Quark open platform API directly (needs an app + OAuth token);
+ * - `webdav`: a WebDAV gateway that already owns the Quark login
+ *   (Alist / OpenList / quarkdrive-webdav).
+ */
+export type RemoteProvider = 'quark' | 'webdav'
+
+export interface WebDavSettings {
+	baseUrl: string
+	username: string
+	password: string
+}
+
+export const DEFAULT_WEBDAV_SETTINGS: WebDavSettings = {
+	baseUrl: '',
+	username: '',
+	password: '',
+}
+
+export function migrateWebDavSettings(input: unknown): WebDavSettings {
+	const stored =
+		input && typeof input === 'object' ? (input as Partial<WebDavSettings>) : {}
+	const merged: WebDavSettings = { ...DEFAULT_WEBDAV_SETTINGS, ...stored }
+	for (const key of Object.keys(DEFAULT_WEBDAV_SETTINGS) as Array<
+		keyof WebDavSettings
+	>) {
+		if (typeof merged[key] !== 'string') {
+			merged[key] = DEFAULT_WEBDAV_SETTINGS[key]
+		}
+	}
+	return merged
+}
+
 export type QuarkOverwriteMode = 'reuse' | 'delete-first'
 
 export interface QuarkSettings {

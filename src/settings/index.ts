@@ -6,7 +6,14 @@ import type QuarkSyncPlugin from '~/index'
 import { ConflictStrategy } from '~/sync/tasks/conflict-resolve.task'
 import { DEFAULT_MOBILE_APP_DOWNLOAD_FILE_CHUNK_SIZE } from '~/utils/download-chunk-size'
 import { GlobFilterRule } from '~/utils/glob-match'
-import QuarkAccountSettings from './quark'
+import AccountSettings from './account'
+import {
+	DEFAULT_QUARK_SETTINGS,
+	DEFAULT_WEBDAV_SETTINGS,
+	type QuarkSettings,
+	type RemoteProvider,
+	type WebDavSettings,
+} from './quark-settings'
 import AISettings from './ai'
 import CommonSettings from './common'
 import FilterSettings from './filter'
@@ -122,20 +129,18 @@ export function getSyncPolicyDescI18nKey(
 	}
 }
 
-import {
-	DEFAULT_QUARK_SETTINGS,
-	type QuarkSettings,
-} from './quark-settings'
-
 export {
-	DEFAULT_QUARK_SETTINGS,
-	migrateQuarkSettings,
 	type QuarkOverwriteMode,
 	type QuarkSettings,
+	type RemoteProvider,
+	type WebDavSettings,
 } from './quark-settings'
+export { migrateQuarkSettings, migrateWebDavSettings } from './quark-settings'
 
 export interface PluginSettings {
+	remoteProvider: RemoteProvider
 	quark: QuarkSettings
+	webdav: WebDavSettings
 	remoteDir: string
 	conflictStrategy: ConflictStrategy
 	confirmBeforeSync: boolean
@@ -181,7 +186,9 @@ function exclude(expr: string): GlobFilterRule {
 }
 
 export const DEFAULT_SETTINGS: PluginSettings = {
+	remoteProvider: 'quark',
 	quark: { ...DEFAULT_QUARK_SETTINGS },
+	webdav: { ...DEFAULT_WEBDAV_SETTINGS },
 	remoteDir: '',
 	conflictStrategy: ConflictStrategy.NoConflictMerge,
 	confirmBeforeSync: true,
@@ -257,7 +264,7 @@ interface SettingsSectionEntry {
 
 export class QuarkSyncSettingTab extends PluginSettingTab {
 	plugin: QuarkSyncPlugin
-	accountSettings: QuarkAccountSettings
+	accountSettings: AccountSettings
 	commonSettings: CommonSettings
 	filterSettings: FilterSettings
 	troubleshootingSettings: TroubleshootingSettings
@@ -275,7 +282,7 @@ export class QuarkSyncSettingTab extends PluginSettingTab {
 		this.tabBarEl = this.containerEl.createDiv()
 		this.warningContainerEl = this.containerEl.createDiv()
 		const accountContainerEl = this.containerEl.createDiv()
-		this.accountSettings = new QuarkAccountSettings(
+		this.accountSettings = new AccountSettings(
 			this.app,
 			this.plugin,
 			this,

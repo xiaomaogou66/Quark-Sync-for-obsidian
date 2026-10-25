@@ -49,6 +49,18 @@ Quark Sync 让 Obsidian 与夸克网盘双向同步，支持桌面端与移动�
 - **令牌过期**：填了「令牌刷新中转」（兼容 OpenList 的刷新接口）会自动续期，否则需手动填新的 Access Token。
 - **限速**：非会员账号下载速度受夸克限速影响。
 
+### 🔌 两种连接方式
+
+设置里的 **同步后端** 可以二选一：
+
+| 后端 | 需要什么 | 适合 |
+| --- | --- | --- |
+| **夸克开放平台（直连）** | 自己在[夸克开放平台](https://open.quark.cn/)注册应用，拿到 `app_id` / `sign_key`，再 OAuth 得到 `access_token` | 能拿到开放平台凭据、想少一层中转 |
+| **WebDAV 网关（Alist / OpenList 等）** | 网关的 WebDAV 地址 + 账号密码；**不需要任何夸克 API 凭据** | 本机/服务器已经用 Alist、OpenList、quarkdrive-webdav 或 `rclone serve webdav` 挂好夸克网盘 |
+
+WebDAV 网关地址一般以 `/dav` 结尾，例如 Alist 默认是 `http://127.0.0.1:5244/dav`，用户名 `admin`。
+插件对这个地址只做标准 WebDAV 读写，网关自己负责登录夸克，因此可同时兼容 Alist、OpenList、quarkdrive-webdav、rclone、坚果云以外的任意 WebDAV 服务端。
+
 ### 🔄 按你的方式同步
 
 | 同步策略               | 行为                                             | 适合场景                   |
@@ -113,6 +125,17 @@ Quark Sync keeps an Obsidian vault and Quark Drive in sync on desktop and mobile
 - Overwrite mode defaults to “reuse the existing file”; switch to “delete first, then upload” if duplicates ever appear.
 - An expired token is refreshed through the optional OpenList-compatible relay, otherwise paste a fresh token.
 - Download speed for free accounts is throttled by Quark.
+
+### 🔌 Two ways to connect
+
+**Sync backend** in the settings switches between:
+
+| Backend | Needs | Good for |
+| --- | --- | --- |
+| **Quark open platform (direct)** | Your own app on the [Quark open platform](https://open.quark.cn/) (`app_id` / `sign_key`) plus an OAuth `access_token` | When you can obtain open-platform credentials and want no extra hop |
+| **WebDAV gateway (Alist / OpenList, …)** | The gateway's WebDAV URL plus credentials — **no Quark API credentials at all** | Machines that already mount Quark through Alist, OpenList, quarkdrive-webdav or `rclone serve webdav` |
+
+The gateway URL usually ends with `/dav` (Alist default: `http://127.0.0.1:5244/dav`, user `admin`). The plugin only performs standard WebDAV calls, so any WebDAV server works — Alist, OpenList, quarkdrive-webdav, rclone, or anything else.
 
 ### 🔄 Sync Your Way
 

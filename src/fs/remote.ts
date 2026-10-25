@@ -16,7 +16,8 @@ import AbstractFileSystem from './fs.interface'
 import { buildRemoteWalkResults } from './utils/build-remote-walk-results'
 
 /**
- * File system view over a generic `RemoteFs` backend (currently Quark Drive).
+ * File system view over a generic `RemoteFs` backend (Quark open platform or a
+ * WebDAV gateway such as Alist/OpenList).
  *
  * Unlike `NutstoreFileSystem` there is no change feed to consume, so each sync
  * performs a full BFS walk through `ResumableRemoteTraversal`.
@@ -28,6 +29,8 @@ export class RemoteFileSystem implements AbstractFileSystem {
 			vault: Vault
 			settings: PluginSettings
 			remoteAccountId: string
+			/** Backend identity for cache/DB keys (endpoint URL). */
+			backendEndpoint?: string
 			remoteBaseDir: string
 			filterRules?: {
 				rules: GlobFilterRule[]
@@ -47,7 +50,7 @@ export class RemoteFileSystem implements AbstractFileSystem {
 			remoteBaseDir: this.options.remoteBaseDir,
 			kvKey: await getRemoteTraversalDBKey(
 				this.options.remoteAccountId,
-				QUARK_API_BASE,
+				this.options.backendEndpoint ?? QUARK_API_BASE,
 				this.options.remoteBaseDir,
 			),
 			saveInterval: 1,

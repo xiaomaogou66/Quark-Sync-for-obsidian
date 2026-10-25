@@ -160,6 +160,10 @@ export default class QuarkSyncPlugin extends Plugin {
 	}
 
 	async getRemoteAccountId() {
+		if (this.settings.remoteProvider === 'webdav') {
+			const webdav = this.settings.webdav
+			return `${webdav.baseUrl.trim()}#${webdav.username.trim()}`
+		}
 		const quark = this.settings.quark
 		return (quark.userId.trim() || quark.appId.trim()).trim()
 	}
@@ -169,6 +173,9 @@ export default class QuarkSyncPlugin extends Plugin {
 	 * @returns true 表示配置完整，false 表示未配置或配置不完整
 	 */
 	isAccountConfigured(): boolean {
+		if (this.settings.remoteProvider === 'webdav') {
+			return this.settings.webdav.baseUrl.trim() !== ''
+		}
 		const quark = this.settings.quark
 		return [quark.appId, quark.signKey, quark.accessToken].every(
 			(value) => value.trim() !== '',

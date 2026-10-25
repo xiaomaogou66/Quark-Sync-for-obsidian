@@ -65,6 +65,7 @@ export async function updateMtimeInRecord(
 		vault,
 		remote: await plugin.remoteBackendService.createRemoteFs(),
 		remoteAccountId: await plugin.getRemoteAccountId(),
+		backendEndpoint: await plugin.remoteBackendService.getBackendEndpoint(),
 		remoteBaseDir: stdRemotePath(remoteBaseDir),
 	})
 

@@ -45,6 +45,35 @@
 			"filters": "过滤规则",
 			"ai": "AI 设置"
 		},
+		"remoteProvider": {
+			"name": "同步后端",
+			"desc": "选择数据通路。直连需要夸克开放平台应用；WebDAV 网关适合已在 Alist / OpenList 上挂载夸克网盘的情况",
+			"quark": "夸克开放平台（直连）",
+			"webdav": "WebDAV 网关（Alist / OpenList 等）"
+		},
+		"webdav": {
+			"hint": "填写网关的 WebDAV 地址与账号。网关（Alist / OpenList / quarkdrive-webdav / rclone serve）负责登录夸克，本插件只对它读写标准 WebDAV，因此不需要夸克开放平台凭据。",
+			"baseUrl": {
+				"name": "WebDAV 地址",
+				"desc": "以 /dav 结尾，例如 http://127.0.0.1:5244/dav",
+				"placeholder": ""
+			},
+			"username": {
+				"name": "用户名",
+				"desc": "网关的 WebDAV 用户名（Alist 默认 admin）",
+				"placeholder": ""
+			},
+			"password": {
+				"name": "密码",
+				"desc": "网关的 WebDAV 密码或 token",
+				"placeholder": ""
+			},
+			"checkConnection": {
+				"name": "检查 WebDAV 连接",
+				"desc": "列出根目录内容，验证地址与账号是否可用",
+				"button": "检查连接"
+			}
+		},
 		"quark": {
 			"hint": "夸克网盘不提供 WebDAV，需要使用开放平台应用：在夸克开放平台创建应用后，把 app_id、sign_key 与授权得到的令牌填到这里。凭据只保存在本地。",
 			"openPlatform": "夸克开放平台",

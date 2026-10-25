@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { DEFAULT_QUARK_SETTINGS, migrateQuarkSettings } from './quark-settings'
+import {
+	DEFAULT_QUARK_SETTINGS,
+	DEFAULT_WEBDAV_SETTINGS,
+	migrateQuarkSettings,
+	migrateWebDavSettings,
+} from './quark-settings'
 
 describe('migrateQuarkSettings', () => {
 	it('returns defaults for missing or invalid input', () => {
@@ -40,5 +45,22 @@ describe('migrateQuarkSettings', () => {
 		expect(
 			migrateQuarkSettings({ overwriteMode: 'delete-first' }).overwriteMode,
 		).toBe('delete-first')
+	})
+})
+
+describe('migrateWebDavSettings', () => {
+	it('returns defaults for missing or invalid input', () => {
+		expect(migrateWebDavSettings(undefined)).toEqual(DEFAULT_WEBDAV_SETTINGS)
+		expect(migrateWebDavSettings(42)).toEqual(DEFAULT_WEBDAV_SETTINGS)
+	})
+
+	it('keeps stored values and repairs non-strings', () => {
+		const migrated = migrateWebDavSettings({
+			baseUrl: 'http://127.0.0.1:5244/dav',
+			username: 123,
+		})
+		expect(migrated.baseUrl).toBe('http://127.0.0.1:5244/dav')
+		expect(migrated.username).toBe('')
+		expect(migrated.password).toBe('')
 	})
 })

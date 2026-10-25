@@ -90,6 +90,35 @@
 			"filters": "Filter rules",
 			"ai": "AI"
 		},
+		"remoteProvider": {
+			"name": "Sync backend",
+			"desc": "Choose the data path. Direct needs a Quark open-platform app; the WebDAV gateway suits setups that already mount Quark in Alist / OpenList",
+			"quark": "Quark open platform (direct)",
+			"webdav": "WebDAV gateway (Alist / OpenList, …)"
+		},
+		"webdav": {
+			"hint": "Enter the gateway's WebDAV endpoint and credentials. The gateway (Alist / OpenList / quarkdrive-webdav / rclone serve) owns the Quark login, so no Quark open-platform credentials are needed here.",
+			"baseUrl": {
+				"name": "WebDAV URL",
+				"desc": "Usually ends with /dav, e.g. http://127.0.0.1:5244/dav",
+				"placeholder": ""
+			},
+			"username": {
+				"name": "Username",
+				"desc": "Gateway WebDAV username (Alist default: admin)",
+				"placeholder": ""
+			},
+			"password": {
+				"name": "Password",
+				"desc": "Gateway WebDAV password or token",
+				"placeholder": ""
+			},
+			"checkConnection": {
+				"name": "Check WebDAV connection",
+				"desc": "Lists the root folder to verify endpoint and credentials",
+				"button": "Check connection"
+			}
+		},
 		"quark": {
 			"hint": "Quark Drive has no WebDAV endpoint. Create an app on the Quark open platform, then paste its app_id, sign_key and an OAuth token here. Credentials stay on this device.",
 			"openPlatform": "Quark open platform",

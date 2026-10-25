@@ -275,6 +275,29 @@ async function main() {
 				`rows=${settingsUi?.rows}`,
 			)
 
+			// Switch to the WebDAV gateway provider and confirm its panel renders,
+			// then switch back so the persisted settings stay on the default.
+			const providerSwitch = await evaluate(
+				client,
+				`(async () => {
+					const instance = app.plugins.plugins['${PLUGIN_ID}'];
+					const original = instance.settings.remoteProvider;
+					instance.settings.remoteProvider = 'webdav';
+					app.setting.activeTab.display();
+					await new Promise((r) => setTimeout(r, 800));
+					const text = app.setting.activeTab?.containerEl?.textContent ?? '';
+					instance.settings.remoteProvider = original;
+					app.setting.activeTab.display();
+					await new Promise((r) => setTimeout(r, 300));
+					return { hasWebdavUrl: /WebDAV (URL|地址)/.test(text), hasBackendPicker: /WebDAV/.test(text) };
+				})()`,
+			)
+			record(
+				'webdav gateway panel renders',
+				providerSwitch?.hasWebdavUrl === true,
+				JSON.stringify(providerSwitch),
+			)
+
 			// Reload to prove the plugin survives an unload/load cycle.
 			const reload = await evaluate(
 				client,

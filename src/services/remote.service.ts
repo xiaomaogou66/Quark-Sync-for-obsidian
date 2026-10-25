@@ -5,17 +5,22 @@ import { QuarkRemoteFs } from '~/remote/quark/quark-remote-fs'
 import { refreshQuarkTokensViaRelay } from '~/remote/quark/token-refresh'
 import type { QuarkCredentials } from '~/remote/quark/quark-client'
 import type { RemoteFs } from '~/remote/remote-fs.interface'
+import { WebDAVRemoteFs } from '~/remote/webdav/webdav-remote-fs'
 import { remoteFidKV } from '~/storage'
 import QuarkSyncPlugin from '../index'
+import { createClient } from 'webdav'
 import { getRemoteTraversalDBKey } from '../utils/get-db-key'
+import { createRateLimitedWebDAVClient } from '../utils/rate-limited-client'
 import { BaseService } from './service.interface'
 
 /**
- * Creates the Quark Drive backend for the sync engine.
+ * Creates the remote backend for the sync engine.
  *
- * This service used to host the Nutstore WebDAV client as well; the Nutstore
- * backend was removed, so it now only wires the Quark open-platform client into
- * a `RemoteFs`.
+ * Two providers share the same `RemoteFs` surface:
+ * - `quark` talks to the Quark open platform directly (needs an app + OAuth);
+ * - `webdav` talks plain WebDAV to a gateway that already owns the Quark login
+ *   (Alist, OpenList, quarkdrive-webdav, rclone serve, …), which needs no Quark
+ *   API credentials at all.
  */
 export class RemoteBackendService extends BaseService {
 	constructor(private plugin: QuarkSyncPlugin) {
@@ -23,6 +28,9 @@ export class RemoteBackendService extends BaseService {
 	}
 
 	async createRemoteFs(): Promise<RemoteFs> {
+		if (this.plugin.settings.remoteProvider === 'webdav') {
+			return await this.createWebDavRemoteFs()
+		}
 		const quark = this.plugin.settings.quark
 		const client: QuarkClient = new QuarkClient({
 			credentials: {
@@ -62,6 +70,27 @@ export class RemoteBackendService extends BaseService {
 		})
 		await remoteFs.init()
 		return remoteFs
+	}
+
+	async createWebDavRemoteFs(): Promise<RemoteFs> {
+		const webdav = this.plugin.settings.webdav
+		const baseUrl = webdav.baseUrl.trim()
+		if (!baseUrl) {
+			throw new Error('WebDAV base URL is not configured')
+		}
+		const client = createClient(baseUrl, {
+			username: webdav.username.trim(),
+			password: webdav.password,
+		})
+		return new WebDAVRemoteFs(createRateLimitedWebDAVClient(client))
+	}
+
+	/** Stable id of the active backend, used for DB keys and cache namespaces. */
+	async getBackendEndpoint(): Promise<string> {
+		if (this.plugin.settings.remoteProvider === 'webdav') {
+			return this.plugin.settings.webdav.baseUrl.trim()
+		}
+		return QUARK_API_BASE
 	}
 
 	/**

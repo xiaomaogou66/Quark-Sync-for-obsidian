@@ -38,7 +38,7 @@ export type RemoteFileContent = ArrayBuffer | string
  */
 export interface RemoteFs {
 	/** Backend discriminator, used to pick traversal strategies and UI copy. */
-	readonly kind: 'quark'
+	readonly kind: 'quark' | 'webdav'
 
 	/** One-off initialisation (token → user id, caches, ...). */
 	init?(): Promise<void>
