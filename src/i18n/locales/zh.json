@@ -576,7 +576,8 @@
 			"failedToAutoMerge": "自动合并失败",
 			"failedToUploadMerged": "上传合并内容失败",
 			"requestsTooFrequent": "请求过于频繁，请等待几分钟后再试",
-			"accountNotConfigured": "尚未配置同步账号，请先在设置中填写夸克开放平台凭据或 WebDAV 网关信息"
+			"accountNotConfigured": "尚未配置同步账号，请先在设置中填写夸克开放平台凭据或 WebDAV 网关信息",
+			"requestTimeout": "远端 {{operation}} 请求超过 {{seconds}} 秒没有响应，已放弃本次同步。请检查网络或同步后端（网关/网盘）状态后重试。"
 		},
 		"requestsTooFrequent": "请求过于频繁，插件将在 {{time}} 后自动继续同步任务",
 		"preparing": "📋 准备同步",
