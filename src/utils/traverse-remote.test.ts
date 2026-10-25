@@ -253,6 +253,28 @@ describe('ResumableRemoteTraversal', () => {
 		await traversal.traverse()
 		expect(list).toHaveBeenCalledTimes(1)
 	})
+
+	it('prunes excluded directories out of the walk', async () => {
+		const list = vi.fn(async (path: string) =>
+			path.replace(/\/+$/, '') === '/Vault'
+				? [entry('/Vault/a.md', false), entry('/Vault/junk', true)]
+				: [],
+		)
+		const traversal = new ResumableRemoteTraversal({
+			remote: { ...createRemote({}), list },
+			remoteBaseDir: '/Vault',
+			kvKey: 'key-prune',
+			concurrency: 2,
+			shouldVisitDir: (path) => !path.includes('/junk'),
+			maxRetries: 1,
+		})
+		const stats = await traversal.traverse()
+		expect(stats.map((stat) => stat.path).sort()).toEqual([
+			'/Vault/a.md',
+			'/Vault/junk',
+		])
+		expect(list.mock.calls).toHaveLength(1)
+	})
 })
 
 describe('ResumableRemoteTraversal rate limiting', () => {

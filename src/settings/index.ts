@@ -268,6 +268,12 @@ export interface PluginLocalSettings {
 	fullScanIntervalHours?: number
 	/** Parallel directory listings during the remote walk. */
 	remoteConcurrency?: number
+	/**
+	 * Uploads/downloads executed at once. Kept separate from
+	 * `remoteConcurrency`: writes hit the Quark API harder than listings, so
+	 * this defaults lower.
+	 */
+	taskConcurrency?: number
 	ai: {
 		presetModels?: AIProviderDefinitions
 		presetModelsUpdatedAt?: string
@@ -279,6 +285,7 @@ export const DEFAULT_LOCAL_SETTINGS: PluginLocalSettings = {
 	fastSync: false,
 	fullScanIntervalHours: 24,
 	remoteConcurrency: 4,
+	taskConcurrency: 3,
 	ai: {},
 }
 

@@ -62,6 +62,7 @@ import SkippedTask from './tasks/skipped.task'
 import { BaseTask, TaskError, TaskResult } from './tasks/task.interface'
 import { mergeMkdirTasks } from './utils/merge-mkdir-tasks'
 import { mergeRemoveRemoteTasks } from './utils/merge-remove-remote-tasks'
+import { buildExecutionBatches } from './utils/task-batching'
 import {
 	countRecordUpdateOperations,
 	type UpdateMtimeProgress,
@@ -696,6 +697,11 @@ export class NutstoreSync {
 		)
 	}
 
+	private getTaskConcurrency(): number {
+		const configured = this.localSettings.taskConcurrency ?? 3
+		return Math.min(Math.max(Math.floor(configured), 1), 6)
+	}
+
 	private async execTasks(
 		tasks: BaseTask[],
 		totalDisplayableTasks: BaseTask[],
@@ -714,18 +720,13 @@ export class NutstoreSync {
 			alreadyCompleted: allCompletedTasks.length,
 		})
 
-		for (let i = 0; i < tasks.length; ++i) {
-			const task = tasks[i]
-			if (this.isCancelled) {
-				break
-			}
-
+		const runTask = async (index: number, task: BaseTask) => {
 			const isDisplayable = !(
 				task instanceof NoopTask || task instanceof CleanRecordTask
 			)
 
 			this.logger.debug(
-				`Executing task [${i + 1}/${tasks.length}] ${task.localPath}`,
+				`Executing task [${index + 1}/${tasks.length}] ${task.localPath}`,
 				{
 					taskName: getTaskName(task),
 					taskPath: task.localPath,
@@ -739,7 +740,7 @@ export class NutstoreSync {
 			const taskResult = await this.executeWithRetry(task)
 
 			this.logger.debug(
-				`Task completed [${i + 1}/${tasks.length}] ${task.localPath}`,
+				`Task completed [${index + 1}/${tasks.length}] ${task.localPath}`,
 				{
 					taskName: getTaskName(task),
 					taskPath: task.localPath,
@@ -747,12 +748,36 @@ export class NutstoreSync {
 				},
 			)
 
-			res[i] = taskResult
+			res[index] = taskResult
 			if (isDisplayable) {
 				allCompletedTasks.push({ task, success: taskResult.success })
 				// Keep current=task so the header doesn't flicker between tasks
 				emitSyncProgress(totalDisplayableTasks.length, allCompletedTasks, task)
 			}
+		}
+
+		const concurrency = this.getTaskConcurrency()
+		const batches = buildExecutionBatches(
+			tasks,
+			concurrency,
+			(task) => task instanceof PushTask || task instanceof PullTask,
+		)
+		if (concurrency > 1 && batches.some((batch) => batch.length > 1)) {
+			this.logger.debug(`Executing tasks with concurrency ${concurrency}`, {
+				batches: batches.length,
+				parallelBatches: batches.filter((batch) => batch.length > 1).length,
+			})
+		}
+
+		for (const batch of batches) {
+			if (this.isCancelled) {
+				break
+			}
+			if (batch.length === 1) {
+				await runTask(batch[0].index, batch[0].task)
+				continue
+			}
+			await Promise.all(batch.map(({ index, task }) => runTask(index, task)))
 		}
 
 		const successCount = res.filter((r) => r.success).length

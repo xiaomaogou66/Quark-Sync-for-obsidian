@@ -149,6 +149,23 @@ export default class CommonSettings extends BaseSettings {
 			})
 
 		new Setting(this.containerEl)
+			.setName(i18n.t('settings.taskConcurrency.name'))
+			.setDesc(i18n.t('settings.taskConcurrency.desc'))
+			.addDropdown((dropdown) => {
+				dropdown
+					.addOption('1', '1')
+					.addOption('2', '2')
+					.addOption('3', '3')
+					.addOption('4', '4')
+					.addOption('6', '6')
+					.setValue(String(this.plugin.localSettings.taskConcurrency ?? 3))
+					.onChange(async (value) => {
+						this.plugin.localSettings.taskConcurrency = Number(value)
+						await this.plugin.settingsService.saveLocalSettings()
+					})
+			})
+
+		new Setting(this.containerEl)
 			.setName(i18n.t('settings.skipLargeFiles.name'))
 			.setDesc(i18n.t('settings.skipLargeFiles.desc'))
 			.addText((text) => {

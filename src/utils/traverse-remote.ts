@@ -82,6 +82,15 @@ export interface RemoteTraversalOptions {
 	fastMode?: boolean
 	/** Age after which fast mode gives up and performs a full walk. */
 	fullScanIntervalMs?: number
+	/**
+	 * Predicate for pruning directories out of the walk entirely.
+	 *
+	 * Filter rules are applied to the walk *results* elsewhere, so an excluded
+	 * directory would still cost one round trip per level. Returning false here
+	 * skips it and its subtree, which matters when the remote already holds
+	 * thousands of ignored files (a synced `.venv`, for instance).
+	 */
+	shouldVisitDir?: (path: string) => boolean
 }
 
 export class ResumableRemoteTraversal {
@@ -93,6 +102,7 @@ export class ResumableRemoteTraversal {
 	private readonly throwIfCancelled?: () => void
 	private readonly maxRetries: number
 	private readonly retryDelayMs: number
+	private readonly shouldVisitDir?: (path: string) => boolean
 	private readonly concurrency: number
 	private readonly fastMode: boolean
 	private readonly fullScanIntervalMs: number
@@ -113,6 +123,7 @@ export class ResumableRemoteTraversal {
 		this.throwIfCancelled = options.throwIfCancelled
 		this.maxRetries = Math.max(options.maxRetries ?? 3, 1)
 		this.retryDelayMs = Math.max(options.retryDelayMs ?? 1000, 0)
+		this.shouldVisitDir = options.shouldVisitDir
 		this.concurrency = Math.max(1, Math.floor(options.concurrency ?? 1))
 		this.fastMode = options.fastMode ?? false
 		this.fullScanIntervalMs = Math.max(
@@ -219,12 +230,7 @@ export class ResumableRemoteTraversal {
 
 					this.discoveredCount += resultItems.length
 					this.nodes[normalizedPath] = resultItems
-
-					for (const item of resultItems) {
-						if (item.isDir) {
-							this.queue.push(item.path)
-						}
-					}
+					this.enqueueChildren(resultItems)
 
 					this.queue.shift()
 					this.processedCount += 1
@@ -285,11 +291,7 @@ export class ResumableRemoteTraversal {
 
 					this.discoveredCount += resultItems.length
 					this.nodes[normalizedPath] = resultItems
-					for (const item of resultItems) {
-						if (item.isDir) {
-							this.queue.push(item.path)
-						}
-					}
+					this.enqueueChildren(resultItems)
 					this.processedCount += 1
 					this.emitProgress('scanning', currentPath)
 					await this.maybeSaveState()
@@ -314,6 +316,18 @@ export class ResumableRemoteTraversal {
 		}
 
 		await this.saveState({ completed: true })
+	}
+
+	private enqueueChildren(items: StatModel[]): void {
+		for (const item of items) {
+			if (!item.isDir) {
+				continue
+			}
+			if (this.shouldVisitDir && !this.shouldVisitDir(item.path)) {
+				continue
+			}
+			this.queue.push(item.path)
+		}
 	}
 
 	private async maybeSaveState(): Promise<void> {

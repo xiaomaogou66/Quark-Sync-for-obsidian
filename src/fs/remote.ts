@@ -14,6 +14,7 @@ import {
 import { QUARK_API_BASE } from '~/remote/quark/constants'
 import AbstractFileSystem from './fs.interface'
 import { buildRemoteWalkResults } from './utils/build-remote-walk-results'
+import { buildDirPruningPredicate } from './utils/dir-pruning'
 
 /**
  * File system view over a generic `RemoteFs` backend (Quark open platform or a
@@ -54,6 +55,24 @@ export class RemoteFileSystem implements AbstractFileSystem {
 	) {}
 
 	async walk() {
+		const settings = this.options.filterRules
+			? undefined
+			: this.options.settings
+		const filterRules =
+			this.options.filterRules ??
+			(settings
+				? computeEffectiveFilterRulesFromParts(
+						this.options.vault.configDir,
+						settings.configDirSyncMode ?? 'none',
+						settings.filterRules,
+					)
+				: undefined)
+
+		const shouldVisitDir = buildDirPruningPredicate(
+			this.options.remoteBaseDir,
+			filterRules?.rules ?? [],
+		)
+
 		const traversal = new ResumableRemoteTraversal({
 			remote: this.options.remote,
 			remoteBaseDir: this.options.remoteBaseDir,
@@ -69,21 +88,9 @@ export class RemoteFileSystem implements AbstractFileSystem {
 			concurrency: this.options.traversal?.concurrency,
 			fastMode: this.options.traversal?.fastMode,
 			fullScanIntervalMs: this.options.traversal?.fullScanIntervalMs,
+			shouldVisitDir,
 		})
 		const traversedStats = await traversal.traverse()
-
-		const settings = this.options.filterRules
-			? undefined
-			: this.options.settings
-		const filterRules =
-			this.options.filterRules ??
-			(settings
-				? computeEffectiveFilterRulesFromParts(
-						this.options.vault.configDir,
-						settings.configDirSyncMode ?? 'none',
-						settings.filterRules,
-					)
-				: undefined)
 
 		return buildRemoteWalkResults({
 			traversedStats,
