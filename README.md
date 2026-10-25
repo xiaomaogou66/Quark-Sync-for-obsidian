@@ -1,162 +1,246 @@
 <h1 align="center">Quark Sync</h1>
 
 <p align="center">
+  <strong>把 Obsidian 仓库同步到夸克网盘：直连夸克开放平台，或对接 Alist / OpenList 等 WebDAV 网关。</strong><br>
+  <em>Sync an Obsidian vault with Quark Drive — directly via the open platform, or through an Alist / OpenList WebDAV gateway.</em>
+</p>
+
+<p align="center">
+  <a href="https://github.com/xiaomaogou66/Quark-Sync-for-obsidian/releases/latest">下载 / Download</a> ·
   <a href="#zh">中文</a> ·
   <a href="#en">English</a>
 </p>
 
-<p align="center">
-  <strong>在 Obsidian 中同步夸克网盘：可视化的同步策略，以及能理解上下文的 AI 助手。</strong><br>
-  <em>Sync your Obsidian vault with Quark Drive, with an extensible AI assistant built into your workspace.</em>
-</p>
-
-> [!NOTE]
-> 这是 [nutstore/obsidian-nutstore-sync](https://github.com/nutstore/obsidian-nutstore-sync) 的衍生项目：同步后端已从坚果云 WebDAV 换成夸克网盘开放平台，坚果云后端与 SSO 登录已移除。AI 助手功能来自上游，其中「坚果云 AI 网关」为上游提供的独立服务。
+> 本仓库是 [nutstore/obsidian-nutstore-sync](https://github.com/nutstore/obsidian-nutstore-sync) 的衍生项目：同步后端换成了夸克网盘，坚果云（WebDAV / SSO / AI 网关）相关代码已全部移除。协议为 **AGPL-3.0**。
 
 ---
 
 <a id="zh"></a>
 
-Quark Sync 让 Obsidian 与夸克网盘双向同步，支持桌面端与移动端。同步方向、冲突策略、过滤规则都可控，另外还有内置 AI 助手可以调用工具、复用 Skills、连接 MCP 服务。
+## ✨ 特性
 
-### ✨ 为什么使用 Quark Sync
+- **两种后端**：夸克开放平台直连，或任意标准 WebDAV 网关（Alist / OpenList / quarkdrive-webdav）
+- **五种同步策略**：双向、仅发送、仅发送（覆盖云端）、仅接收、仅接收（还原本地）
+- **可视化目录选择**：面包屑浏览远端目录，可直接新建，路径不存在自动回退到根
+- **冲突处理可选**：智能合并、diff3 三路合并、本地优先、云端优先
+- **可控可审阅**：同步前预览待执行操作；自动同步中的删除单独确认
+- **过滤与大文件**：glob 规则、`configDir` 同步模式、超大文件跳过
+- **AI 助手**（继承自上游）：内置 ChatBox，可调用工具、Skills、MCP
 
-- **同步方向由你决定**：五种同步策略覆盖多设备同步、单向备份和镜像场景。
-- **重要操作看得见**：可在同步前审阅待执行操作，并为自动删除单独保留确认步骤。
-- **大型 Vault 也能灵活配置**：支持宽松或严格扫描、路径过滤和大文件跳过。
-- **可扩展的 AI 助手**：在 Obsidian 中使用内置工具、Skills、MCP 和可配置子 Agent。
+## 🚀 安装
 
-### 🚀 快速开始
+1. 从 [Releases](https://github.com/xiaomaogou66/Quark-Sync-for-obsidian/releases/latest) 下载 `main.js`、`manifest.json`、`styles.css`
+2. 放进 `<vault>/.obsidian/plugins/quark-sync/`
+3. 重启 Obsidian → 设置 → 第三方插件 → 启用 **Quark Sync**
 
-1. 把本仓库的 `main.js`、`manifest.json`、`styles.css` 放进 `<vault>/.obsidian/plugins/quark-sync/`，然后在 Obsidian 中启用 **Quark Sync**。
-2. 在 [夸克开放平台](https://open.quark.cn/) 创建应用，取得 `app_id` 与 `sign_key`。
-3. 完成 OAuth 授权，取得 `access_token` 与 `refresh_token`。
-4. 打开插件设置，填入上述四项与根目录 FID（默认 `0`），点击 **检查连接**。
-5. 选择同步目录与同步策略，点击功能区图标或运行命令 **Start sync**。
+> 首次同步前请备份 Vault。
 
-> [!IMPORTANT]
-> 首次同步前请备份 Vault。带有“覆盖”或“还原”含义的镜像策略可能删除另一端独有的文件。
+## 🔌 两种连接方式
 
-### 🗄️ 夸克后端说明
-
-夸克网盘不提供 WebDAV，也没有账号密码登录，因此本插件直接对接**开放平台 API**：
-
-- **凭据只保存在本地 Vault**，不会上传到任何服务器；`sign_key` 属于你自己创建的应用。
-- **写入本地修改时间**：上传时把本地 mtime 写进 `l_updated_at`，双向同步仍按修改时间比较。
-- **秒传**：内容未变的文件通过 `upload_pre` 的秒传通道跳过上传；大文件按服务端下发的分片大小分片 PUT。
-- **每次同步都会重新遍历远端目录**：开放接口没有增量变更流，大 Vault 首次同步较慢。
-- **覆盖方式**：默认“复用同名文件”；若发现同名文件被上传成多份，改为“先删除再上传”。
-- **令牌过期**：填了「令牌刷新中转」（兼容 OpenList 的刷新接口）会自动续期，否则需手动填新的 Access Token。
-- **限速**：非会员账号下载速度受夸克限速影响。
-
-### 🔌 两种连接方式
-
-设置里的 **同步后端** 可以二选一：
+设置 → Quark Sync → 夸克网盘账号，顶部 **同步后端** 二选一：
 
 | 后端 | 需要什么 | 适合 |
 | --- | --- | --- |
-| **夸克开放平台（直连）** | 自己在[夸克开放平台](https://open.quark.cn/)注册应用，拿到 `app_id` / `sign_key`，再 OAuth 得到 `access_token` | 能拿到开放平台凭据、想少一层中转 |
-| **WebDAV 网关（Alist / OpenList 等）** | 网关的 WebDAV 地址 + 账号密码；**不需要任何夸克 API 凭据** | 本机/服务器已经用 Alist、OpenList、quarkdrive-webdav 或 `rclone serve webdav` 挂好夸克网盘 |
+| **夸克开放平台（直连）** | 在[夸克开放平台](https://open.quark.cn/)注册应用，取得 `app_id` / `sign_key`，再 OAuth 得到 `access_token` / `refresh_token` | 能拿到开放平台凭据 |
+| **WebDAV 网关（Alist / OpenList 等）** | 网关的 WebDAV 地址 + 账号密码，**不需要任何夸克 API 凭据** | 已有（或愿意搭）Alist / OpenList |
 
-WebDAV 网关地址一般以 `/dav` 结尾，例如 Alist 默认是 `http://127.0.0.1:5244/dav`，用户名 `admin`。
-插件对这个地址只做标准 WebDAV 读写，网关自己负责登录夸克，因此可同时兼容 Alist、OpenList、quarkdrive-webdav、rclone、坚果云以外的任意 WebDAV 服务端。
+拿到凭据后点 **检查连接**；失败时会给具体原因（地址缺 `/dav`、401 凭据错误、404 路径不存在、405 不是 WebDAV 等）。
 
-### 🔄 按你的方式同步
+## 🗄️ 网盘侧准备：用 Alist / OpenList 挂载夸克网盘
 
-| 同步策略               | 行为                                             | 适合场景                   |
-| ---------------------- | ------------------------------------------------ | -------------------------- |
-| **双向同步**           | 在本地与夸克网盘之间同步新增、修改和删除         | 多设备日常使用             |
-| **仅发送**             | 上传本地新增和修改，保留云端独有或已变化的内容   | 本地为主，云端保留独立内容 |
-| **仅发送（覆盖云端）** | 让云端内容与本地保持一致                         | 将本地作为完整主副本       |
-| **仅接收**             | 下载云端新增和修改，保留本地独有或已变化的内容   | 云端为主，本地保留独立内容 |
-| **仅接收（还原本地）** | 让本地内容与云端保持一致                         | 将云端作为完整主副本       |
+插件自己不做夸克登录，网关负责登录并把网盘暴露成 WebDAV。两者任选其一，操作几乎一致。
 
-### 🧩 冲突处理由你选择
+### 官方入口
 
-- **智能合并**：对 Markdown 等文本文件做无冲突合并，保留双方改动。
-- **diff3 三路合并**：以同步基线为参照做三路合并。
-- **本地优先 / 云端优先**：直接让一侧覆盖另一侧，适合单一来源的目录。
+| 项目 | 文档 | 源码 | 夸克驱动文档 |
+| --- | --- | --- | --- |
+| **Alist** | <https://alistgo.com>（旧版文档 <https://alist.nn.ci>） | <https://github.com/AlistGo/alist> | <https://alistgo.com/zh/guide/drivers/quark> |
+| **OpenList** | <https://doc.oplist.org> | <https://github.com/OpenListTeam/OpenList> | <https://doc.oplist.org/guide/drivers/quark> |
 
-### 🤖 AI 助手
+> OpenList 是 Alist 的社区治理分支，命令与界面基本一致；下面以 `alist` 为例，OpenList 把命令换成 `openlist` 即可。
 
-内置 ChatBox 可以读取当前 Vault、调用工具、执行 Skills、连接 MCP 服务，并按需启用子 Agent。Agent 修改文件或插件设置前会请求确认，设置中还有白名单限制，不包含夸克凭据或 AI API Key。
+### 1. 安装并初始化
 
-### ⚠️ 使用前须知
+```bash
+# 方式 A：直接跑官方二进制（Linux x86_64）
+#   从 Releases 下载 alist-linux-amd64.tar.gz 或 openlist-linux-amd64.tar.gz
+tar xzf alist-linux-amd64.tar.gz && chmod +x alist
 
-- 首次同步需要扫描两端内容，文件较多时会花费更长时间。
-- “仅发送（覆盖云端）”可能删除云端独有文件；“仅接收（还原本地）”可能删除本地独有文件。
-- 被过滤或超过大小限制的文件不会同步，因此两端可能有意保持不同。
-- 如果两端已经存在大量同名文件，建议先备份并使用严格模式完成首次同步。
-- 本插件不是 Obsidian 官方同步服务，也与夸克官方无关；夸克开放平台的应用与配额由你自己承担。
+# 方式 B：Docker
+docker run -d --restart unless-stopped -p 5244:5244 \
+  -v /srv/alist:/opt/alist/data --name alist xhofe/alist:latest
+
+# 设管理员密码（第一次启动会打印随机密码，也可手动设置）
+./alist admin set '你的密码'
+
+# 前台启动；数据目录用 --data 显式指定，避免和 systemd 的工作目录不一致
+./alist server --data /srv/alist
+```
+
+管理界面：<http://localhost:5244>
+
+### 2. 取夸克 Cookie
+
+1. 浏览器打开 <https://pan.quark.cn> 并**先登录**
+2. `F12` → Network → 勾选 Preserve log → 刷新页面
+3. 过滤框输入 `clouddrive`，点开任意请求（如 `file/sort`）
+4. 复制 Request Headers 里的整个 `Cookie` 值（**不要带 `Cookie:` 前缀和引号**）
+
+> Cookie 里最关键的是 `__pus`（登录态）和 `__puus`（短期 token，约 3 小时）。Alist / OpenList 会自动刷新 `__puus`，配置一次长期有效；但如果夸克强制重新登录（异地登录、改密、风控），存储会掉线，需要重抓 Cookie。
+
+### 3. 添加存储
+
+管理界面 → **存储** → **添加**：
+
+| 字段 | 值 |
+| --- | --- |
+| 驱动 | **夸克网盘 / TV**（OpenList 里为 `Quark / TV / Open`，也有基于官方 OpenAPI 的 `Quark Open`） |
+| 挂载路径 | `/quark`（插件里就用这个路径，例如 `/quark/AI学习工作流`） |
+| Cookie | 第 2 步抓到的整串 |
+| 根文件夹 ID | `0`（网盘根目录；要挂子目录就填该目录 ID） |
+| WebDAV 策略 / 代理 | 保持默认「本地代理」兼容性最好 |
+
+保存后确认存储状态是 **work**（不是 `require login`）。
+
+### 4. 确认 WebDAV 可用
+
+```bash
+# 未认证应为 401，说明 DAV 端点在
+curl -s -o /dev/null -w '%{http_code}\n' -X PROPFIND http://localhost:5244/dav/ -H 'Depth: 0'
+```
+
+插件里填：
+
+| 设置项 | 值 |
+| --- | --- |
+| WebDAV 地址 | `http://localhost:5244/dav`（**必须带 `/dav`**） |
+| 用户名 / 密码 | Alist / OpenList 的管理员账号密码（不是夸克账号） |
+| 远程目录 | 点 📁 按钮选，或填 `/quark/<仓库名>` |
+
+> 想验证「是网关问题还是插件问题」，用仓库里的探针脚本（不依赖 Obsidian）：
+>
+> ```bash
+> GATEWAY_URL=http://localhost:5244/dav GATEWAY_USER=admin GATEWAY_PASS='密码' \
+>   node scripts/webdav-gateway-probe.mjs /quark
+> ```
+
+### 常见问题
+
+| 现象 | 原因 / 处理 |
+| --- | --- |
+| 存储状态 `require login [guest]` | Cookie 无效或缺 `__pus`，重抓后保存 |
+| 插件「检查连接」报 401 | 用了夸克账号；这里要填 Alist / OpenList 的账号密码 |
+| 报 404 / 405 | 地址少了 `/dav`，或填成了网页首页 |
+| 挂载后目录多一层 `quark/` | 用 WebDAV 根（`/dav`）会看到所有存储；远程目录要写 `/quark/...` |
+| 下载很慢 | 夸克非会员限速是服务端限制 |
+
+## 🧭 首次同步建议
+
+1. 通用设置 → 远程目录：用 📁 选择器确定目标目录（例如 `/quark/AI学习工作流`）
+2. 同步策略先选 **仅发送**（本地 → 云端），同步模式保持 **严格**
+3. 点同步 → 在「操作预览」里确认都是上传、没有意外删除
+4. 跑完切 **双向** 再同步一次确认无差异
+
+跑完可用下面的命令核对远端文件数与体积：
+
+```bash
+GATEWAY_URL=http://localhost:5244/dav GATEWAY_USER=admin GATEWAY_PASS='密码' \
+  node scripts/webdav-gateway-probe.mjs --count /quark/AI学习工作流
+```
+
+## ⚠️ 已知限制
+
+- **没有增量变更流**：每次同步都会重新遍历远端目录，大 Vault 首次与后续同步都较慢
+- **写入本地 mtime**：上传时把本地修改时间写进云端，双向同步仍按 mtime 比较
+- **名称与长度**：云端不接受的文件名会被单列出来，不会静默跳过
+- **开放平台凭据**需自行申请；拿不到就走 WebDAV 网关
+- WebDAV 请求做了串行限速（约 200ms/次），防止打爆网关
+
+## 🛠️ 开发
+
+```bash
+pnpm install          # 需要 git-lfs 之外无特殊依赖（模型目录已改为普通文件跟踪）
+pnpm lint             # eslint + tsc
+pnpm test:unit        # 单测（含夸克客户端、适配器、路径助手）
+pnpm build            # 产出 main.js / styles.css
+pnpm test:obsidian:host   # 用本机 Obsidian 起临时 vault 做端到端验收（CDP）
+```
+
+发布：
+
+```bash
+gh release create v1.5.x-quark main.js manifest.json styles.css \
+  --title "Quark Sync 1.5.x" --notes-file notes.md
+```
+
+## 📄 协议
+
+AGPL-3.0，与上游一致。上游版权归 nutstore 及贡献者所有。
 
 ---
 
 <a id="en"></a>
 
-Quark Sync keeps an Obsidian vault and Quark Drive in sync on desktop and mobile. You choose the direction, the conflict strategy and the filters, and a built-in AI assistant can use tools, reusable Skills and MCP servers when you need it.
+## ✨ Features
 
-> [!NOTE]
-> This is a derivative of [nutstore/obsidian-nutstore-sync](https://github.com/nutstore/obsidian-nutstore-sync). The sync backend was replaced with the Quark Drive open platform; the Nutstore WebDAV backend and SSO login were removed. AI features come from upstream, including the optional Nutstore AI gateway provider.
+- **Two backends**: the Quark open-platform API, or any standard WebDAV gateway (Alist / OpenList / quarkdrive-webdav)
+- **Five sync policies**: two-way, send only, send only (override cloud), receive only, receive only (revert local)
+- **Visual folder picker** with breadcrumbs, folder creation and automatic fallback to the root
+- **Conflict strategies**: smart merge, diff3, local priority, cloud priority
+- **Reviewable**: preview planned operations, separate confirmation for deletions during auto-sync
+- **Filters & limits**: glob rules, config-dir modes, large-file skipping
+- **AI assistant** inherited from upstream (ChatBox, tools, Skills, MCP)
 
-### ✨ Why Quark Sync
+## 🚀 Install
 
-- **You control the direction**: five sync policies cover everyday multi-device use, one-way backup, and mirror workflows.
-- **Important operations stay visible**: review planned operations before syncing and keep a separate confirmation step for automatic deletions.
-- **Flexible for large vaults**: loose or strict scanning, path filters, and large-file limits.
-- **An extensible AI assistant**: built-in tools, Skills, MCP, and configurable subagents.
+1. Download `main.js`, `manifest.json`, `styles.css` from the [latest release](https://github.com/xiaomaogou66/Quark-Sync-for-obsidian/releases/latest)
+2. Copy them into `<vault>/.obsidian/plugins/quark-sync/`
+3. Reload Obsidian → Settings → Community plugins → enable **Quark Sync**
 
-### 🚀 Quick Start
+## 🔌 Two ways to connect
 
-1. Copy `main.js`, `manifest.json` and `styles.css` into `<vault>/.obsidian/plugins/quark-sync/`, then enable **Quark Sync** in Obsidian.
-2. Create an app on the [Quark open platform](https://open.quark.cn/) to get an `app_id` and `sign_key`.
-3. Complete the OAuth flow to obtain an `access_token` and `refresh_token`.
-4. Open the plugin settings, paste all four values plus a root folder FID (default `0`), then run **Check connection**.
-5. Pick a sync folder and policy, then click the ribbon icon or run **Start sync**.
-
-> [!IMPORTANT]
-> Back up your vault before the first sync. Mirror policies that override or revert changes may delete files that exist on only one side.
-
-### 🗄️ About the Quark backend
-
-- Credentials stay in the local vault and are never uploaded; the `sign_key` belongs to the app you created.
-- Uploads carry the local mtime (`l_updated_at`), so two-way sync still compares modification times.
-- Unchanged files short-circuit through the rapid-upload channel; large files are uploaded in server-provided parts.
-- There is no change feed, so every sync re-walks the remote tree — the first sync of a large vault is slow.
-- Overwrite mode defaults to “reuse the existing file”; switch to “delete first, then upload” if duplicates ever appear.
-- An expired token is refreshed through the optional OpenList-compatible relay, otherwise paste a fresh token.
-- Download speed for free accounts is throttled by Quark.
-
-### 🔌 Two ways to connect
-
-**Sync backend** in the settings switches between:
+Settings → Quark Sync → account section → **Sync backend**:
 
 | Backend | Needs | Good for |
 | --- | --- | --- |
-| **Quark open platform (direct)** | Your own app on the [Quark open platform](https://open.quark.cn/) (`app_id` / `sign_key`) plus an OAuth `access_token` | When you can obtain open-platform credentials and want no extra hop |
-| **WebDAV gateway (Alist / OpenList, …)** | The gateway's WebDAV URL plus credentials — **no Quark API credentials at all** | Machines that already mount Quark through Alist, OpenList, quarkdrive-webdav or `rclone serve webdav` |
+| **Quark open platform (direct)** | An app on the [Quark open platform](https://open.quark.cn/) (`app_id` / `sign_key`) plus an OAuth `access_token` | You can obtain open-platform credentials |
+| **WebDAV gateway (Alist / OpenList, …)** | The gateway's WebDAV URL and credentials — **no Quark API credentials at all** | You already run Alist / OpenList |
 
-The gateway URL usually ends with `/dav` (Alist default: `http://127.0.0.1:5244/dav`, user `admin`). The plugin only performs standard WebDAV calls, so any WebDAV server works — Alist, OpenList, quarkdrive-webdav, rclone, or anything else.
+## 🗄️ Gateway setup (Alist / OpenList)
 
-### 🔄 Sync Your Way
+| Project | Docs | Source | Quark driver docs |
+| --- | --- | --- | --- |
+| **Alist** | <https://alistgo.com> | <https://github.com/AlistGo/alist> | <https://alistgo.com/zh/guide/drivers/quark> |
+| **OpenList** | <https://doc.oplist.org> | <https://github.com/OpenListTeam/OpenList> | <https://doc.oplist.org/guide/drivers/quark> |
 
-| Policy                        | Behaviour                                                        | Good for                      |
-| ----------------------------- | ---------------------------------------------------------------- | ----------------------------- |
-| **Two-way**                   | Add, update and delete in both directions                        | Everyday multi-device use     |
-| **Send only**                 | Upload local changes, keep cloud-only or changed content         | Local-first with cloud copies |
-| **Send only (override cloud)**| Make the cloud match the vault exactly                            | Vault is the only source      |
-| **Receive only**              | Download cloud changes, keep local-only or changed content        | Cloud-first, local edits kept |
-| **Receive only (revert local)**| Make the vault match the cloud exactly                           | Cloud is the only source      |
+1. Install and start the gateway (binary or Docker), then `./alist admin set '<password>'` and `./alist server --data /srv/alist`. Web UI: <http://localhost:5244>
+2. Log in at <https://pan.quark.cn>, open DevTools → Network, filter `clouddrive`, copy the whole `Cookie` header value (it must include `__pus`)
+3. In the gateway UI: **Storage → Add** → driver **Quark / TV**, mount path `/quark`, paste the cookie, root folder ID `0`, keep the default local proxy
+4. Verify the storage status is **work**, then confirm `PROPFIND http://localhost:5244/dav/` answers 401 (endpoint alive)
+5. In the plugin: WebDAV URL `http://localhost:5244/dav`, the gateway's **admin** credentials, and a remote directory such as `/quark/MyVault` (use the 📁 picker)
 
-### 🧩 Choose How Conflicts Are Handled
+Out-of-app check (no Obsidian needed):
 
-- **Smart merge** for Markdown-like text files, keeping both sides.
-- **diff3 three-way merge** against the recorded base.
-- **Local priority / cloud priority** when one side should win outright.
+```bash
+GATEWAY_URL=http://localhost:5244/dav GATEWAY_USER=admin GATEWAY_PASS='password' \
+  node scripts/webdav-gateway-probe.mjs /quark
+```
 
-### ⚠️ Before You Sync
+## 🧭 First sync
 
-- The first sync scans both sides and may take longer for large vaults.
-- **Send only (override cloud)** may delete cloud-only files; **Receive only (revert local)** may delete local-only files.
-- Filtered files and files above the size limit remain unsynced, so the two sides may intentionally differ.
-- If both sides already contain many files with matching paths, back up first and use strict mode for the initial sync.
-- This plugin is not Obsidian Sync and is not affiliated with Quark.
+1. Pick the remote directory with the 📁 picker
+2. Choose **Send only** and keep **strict** mode
+3. Sync, review the operation preview, then start
+4. Switch to **Two-way** afterwards and sync once more
+
+## ⚠️ Limitations
+
+- No change feed: every sync re-walks the remote tree, so large vaults are slow
+- Local mtimes are written on upload so two-way comparison keeps working
+- Rejected filenames are reported, never skipped silently
+- Open-platform credentials must be obtained by you; otherwise use a WebDAV gateway
+- WebDAV calls are serialised (~200 ms) to protect the gateway
+
+## 📄 License
+
+AGPL-3.0, same as upstream.
