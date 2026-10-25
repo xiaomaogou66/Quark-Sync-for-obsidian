@@ -10,6 +10,9 @@
  *   GATEWAY_USER=admin GATEWAY_PASS=secret \
  *     node scripts/webdav-gateway-probe.mjs [remote/path]
  *
+ *   # count files/bytes under a path (compare with the local vault after a sync)
+ *   ... node scripts/webdav-gateway-probe.mjs --count /quark/AI学习工作流
+ *
  * Notes:
  * - The URL must include the WebDAV path (Alist: /dav).
  * - Alist needs its dashboard account password, not a site token.
@@ -20,7 +23,9 @@ import { createClient } from 'webdav'
 const url = process.env.GATEWAY_URL
 const username = process.env.GATEWAY_USER ?? ''
 const password = process.env.GATEWAY_PASS ?? ''
-const remotePath = process.argv[2] ?? '/'
+const countMode = process.argv.includes('--count')
+const remotePath =
+	process.argv.slice(2).find((arg) => !arg.startsWith('--')) ?? '/'
 
 if (!url) {
 	console.error('Set GATEWAY_URL, e.g. GATEWAY_URL=http://127.0.0.1:5244/dav')
@@ -45,7 +50,35 @@ async function step(name, fn) {
 	}
 }
 
+/** Recursively counts files/bytes so a finished sync can be verified. */
+async function countRemote(path) {
+	let files = 0
+	let dirs = 0
+	let bytes = 0
+	const queue = [path]
+	while (queue.length > 0) {
+		const current = queue.shift()
+		const items = await client.getDirectoryContents(current)
+		for (const item of items) {
+			if (item.type === 'directory') {
+				dirs += 1
+				queue.push(item.filename)
+			} else {
+				files += 1
+				bytes += typeof item.size === 'number' ? item.size : 0
+			}
+		}
+	}
+	return { files, dirs, bytes, mib: +(bytes / 1024 / 1024).toFixed(2) }
+}
+
 try {
+	if (countMode) {
+		const summary = await countRemote(remotePath)
+		console.log(`remote ${remotePath}: ${JSON.stringify(summary)}`)
+		console.log('compare with your vault: files/bytes should match (minus ignored paths)')
+		process.exit(0)
+	}
 	await step('root exists (PROPFIND /)', () => client.exists('/'))
 	await step(`root listing (PROPFIND /?Depth=1)`, async () => {
 		const items = await client.getDirectoryContents('/')
