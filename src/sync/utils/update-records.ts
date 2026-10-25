@@ -60,6 +60,10 @@ export async function updateMtimeInRecord(
 		return
 	}
 
+	// This walk needs the *current* remote state, so it must never reuse the
+	// fast-sync snapshot (which would be missing everything uploaded since the
+	// last full walk, and those files would then get no sync record at all).
+	// It runs once per 200-task chunk, so it also gets the parallel walk.
 	const remoteFs = new RemoteFileSystem({
 		settings: plugin.settings,
 		vault,
@@ -67,6 +71,10 @@ export async function updateMtimeInRecord(
 		remoteAccountId: await plugin.getRemoteAccountId(),
 		backendEndpoint: await plugin.remoteBackendService.getBackendEndpoint(),
 		remoteBaseDir: stdRemotePath(remoteBaseDir),
+		traversal: {
+			concurrency: plugin.localSettings.remoteConcurrency,
+			fastMode: false,
+		},
 	})
 
 	const latestRemoteEntities = await remoteFs.walk()
