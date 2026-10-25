@@ -16,6 +16,7 @@ vi.mock('~/storage', () => ({
 	},
 }))
 
+import { apiLimiter } from './api-limiter'
 import { ResumableRemoteTraversal } from './traverse-remote'
 
 const normalizeKey = (path: string) =>
@@ -142,4 +143,39 @@ describe('ResumableRemoteTraversal', () => {
 		})
 		await expect(traversal.traverse()).rejects.toThrow('cancelled')
 	})
+})
+
+describe('ResumableRemoteTraversal rate limiting', () => {
+	/**
+	 * Regression: the traversal used to wrap `remote.list` in `apiLimiter.wrap`
+	 * while the backend client scheduled the same call through the same
+	 * single-slot limiter. The outer job held the slot, the inner one waited for
+	 * it, and the first listing never reached the network — the sync hung at
+	 * "scanning remote directory" with no request and no error.
+	 */
+	it('completes when the backend schedules through apiLimiter itself', async () => {
+		const tree: Record<string, RemoteEntry[]> = {
+			'/Vault': [entry('/Vault/a.md', false), entry('/Vault/sub', true)],
+			'/Vault/sub': [entry('/Vault/sub/b.md', false)],
+		}
+		const remote: RemoteFs = {
+			...createRemote(tree),
+			list: (path) =>
+				apiLimiter.schedule(async () => tree[normalizeKey(path)] ?? []),
+		}
+
+		const traversal = new ResumableRemoteTraversal({
+			remote,
+			remoteBaseDir: '/Vault',
+			kvKey: `key-limiter-${Date.now()}`,
+			maxRetries: 1,
+		})
+
+		const stats = await traversal.traverse()
+		expect(stats.map((stat) => stat.path).sort()).toEqual([
+			'/Vault/a.md',
+			'/Vault/sub',
+			'/Vault/sub/b.md',
+		])
+	}, 15_000)
 })
