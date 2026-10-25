@@ -12,6 +12,7 @@ import i18n from '~/i18n'
 import {
 	DEFAULT_LOCAL_SETTINGS,
 	DEFAULT_SETTINGS,
+	migrateQuarkSettings,
 	type NutstoreLocalSettings,
 	type NutstoreSettings,
 } from '~/settings'
@@ -50,6 +51,7 @@ export default class SettingsService extends BaseService {
 				? (loadedSettings as Partial<NutstoreSettings>)
 				: {}
 		this.plugin.settings = Object.assign({}, DEFAULT_SETTINGS, storedSettings)
+		this.plugin.settings.quark = migrateQuarkSettings(storedSettings.quark)
 		if (
 			storedSettings?.conflictStrategy !== undefined &&
 			!Object.values(ConflictStrategy).includes(storedSettings.conflictStrategy)
