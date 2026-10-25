@@ -236,11 +236,50 @@ async function main() {
 				String(vaultPath),
 			)
 
+			// A fresh vault shows Obsidian's "trust folder / trust author" prompt,
+			// which must be dismissed or it swallows every modal we open afterwards.
+			// A fresh vault shows Obsidian's "trust folder / trust author" prompt; while
+			// it is open, `enablePluginAndSave` silently defers loading the plugin.
+			// Dismiss it first, and keep checking in case it appears late.
+			const trustDismissed = await evaluate(
+				client,
+				`(async () => {
+					let dismissed = 0;
+					for (let attempt = 0; attempt < 10; attempt++) {
+						const dialogs = Array.from(
+							document.querySelectorAll('.modal-container .modal, .modal'),
+						).filter((el) => /trust|信任/i.test(el.className + el.textContent));
+						if (dialogs.length === 0) {
+							await new Promise((r) => setTimeout(r, 300));
+							continue;
+						}
+						for (const dialog of dialogs) {
+							const primary = dialog.querySelector('button.mod-cta') || dialog.querySelector('button');
+							primary?.click();
+							dismissed++;
+							await new Promise((r) => setTimeout(r, 400));
+						}
+					}
+					return { dismissed, remaining: document.querySelectorAll('.modal').length };
+				})()`,
+			)
+			record(
+				'obsidian trust prompt handled',
+				trustDismissed?.remaining === 0,
+				JSON.stringify(trustDismissed),
+			)
+
 			const enabled = await evaluate(
 				client,
 				`(async () => {
 					await app.plugins.setEnable(true);
 					await app.plugins.enablePluginAndSave('${PLUGIN_ID}');
+					for (let attempt = 0; attempt < 40; attempt++) {
+						if (app.plugins.plugins['${PLUGIN_ID}']) {
+							return true;
+						}
+						await new Promise((r) => setTimeout(r, 250));
+					}
 					return Array.from(app.plugins.enabledPlugins).includes('${PLUGIN_ID}');
 				})()`,
 			)
@@ -325,28 +364,6 @@ async function main() {
 				'webdav gateway panel renders',
 				providerSwitch?.hasWebdavUrl === true,
 				JSON.stringify(providerSwitch),
-			)
-
-			// A fresh vault shows Obsidian's "trust folder / trust author" prompt,
-			// which must be dismissed or it swallows every modal we open afterwards.
-			const trustDismissed = await evaluate(
-				client,
-				`(async () => {
-					const dialogs = Array.from(
-						document.querySelectorAll('.modal-container .modal'),
-					).filter((el) => /trust|信任/i.test(el.className + el.textContent));
-					for (const dialog of dialogs) {
-						const primary = dialog.querySelector('button.mod-cta') || dialog.querySelector('button');
-						primary?.click();
-						await new Promise((r) => setTimeout(r, 400));
-					}
-					return { count: dialogs.length, remaining: document.querySelectorAll('.modal').length };
-				})()`,
-			)
-			record(
-				'obsidian trust prompt dismissed',
-				typeof trustDismissed?.count === 'number',
-				JSON.stringify(trustDismissed),
 			)
 
 			// Remote directory picker. Obsidian 1.14 attaches modals to the active

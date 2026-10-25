@@ -194,7 +194,6 @@ export class ResumableRemoteTraversal {
 
 			if (this.concurrency > 1) {
 				await this.walkParallel()
-				await this.saveState()
 				this.emitProgress('complete')
 				return this.getAllFromCache()
 			}
@@ -239,7 +238,7 @@ export class ResumableRemoteTraversal {
 				}
 			}
 
-			await this.saveState()
+			await this.saveState({ completed: true })
 			this.emitProgress('complete')
 
 			return this.getAllFromCache()
@@ -313,6 +312,8 @@ export class ResumableRemoteTraversal {
 				? failure
 				: new Error('Remote traversal failed')
 		}
+
+		await this.saveState({ completed: true })
 	}
 
 	private async maybeSaveState(): Promise<void> {
@@ -376,14 +377,21 @@ export class ResumableRemoteTraversal {
 		}
 	}
 
-	private async saveState() {
+	/**
+	 * Persists the current snapshot.
+	 *
+	 * `fullScanAt` marks "the remote looked like this at T" and is only written
+	 * when the walk really finished. Checking `queue.length === 0` is not enough:
+	 * with parallel workers the queue is momentarily empty while a sibling is
+	 * still listing, so an interrupted walk could otherwise be trusted by fast
+	 * mode and hide remote changes forever.
+	 */
+	private async saveState(options: { completed?: boolean } = {}) {
 		await remoteTraversalKV.set(this.kvKey, {
 			rootCursor: '',
 			queue: this.queue,
 			nodes: this.nodes,
-			// Only a finished walk is a valid "the remote looked like this at T"
-			// marker for fast mode.
-			fullScanAt: this.queue.length === 0 ? Date.now() : undefined,
+			fullScanAt: options.completed ? Date.now() : undefined,
 		})
 	}
 

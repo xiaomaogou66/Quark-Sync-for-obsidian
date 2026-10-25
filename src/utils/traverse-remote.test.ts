@@ -16,6 +16,8 @@ vi.mock('~/storage', () => ({
 	},
 }))
 
+import { remoteTraversalKV } from '~/storage'
+import type { RemoteTraversalCache } from '~/storage/kv'
 import { apiLimiter } from './api-limiter'
 import { ResumableRemoteTraversal } from './traverse-remote'
 
@@ -286,4 +288,54 @@ describe('ResumableRemoteTraversal rate limiting', () => {
 			'/Vault/sub/b.md',
 		])
 	}, 15_000)
+})
+
+describe('RemoteTraversal snapshot completeness', () => {
+	const readCache = async (key: string) =>
+		(await remoteTraversalKV.get(key)) as RemoteTraversalCache | null
+
+	it('marks a finished parallel walk as complete', async () => {
+		const tree: Record<string, RemoteEntry[]> = {
+			'/Vault': [entry('/Vault/a', true), entry('/Vault/b', true)],
+			'/Vault/a': [entry('/Vault/a/x.md', false)],
+			'/Vault/b': [],
+		}
+		const key = `key-complete-${Date.now()}`
+		await new ResumableRemoteTraversal({
+			remote: createRemote(tree),
+			remoteBaseDir: '/Vault',
+			kvKey: key,
+			concurrency: 4,
+			maxRetries: 1,
+		}).traverse()
+
+		expect((await readCache(key))?.fullScanAt).toBeTypeOf('number')
+	})
+
+	it('does not mark an interrupted walk as complete', async () => {
+		const remote: RemoteFs = {
+			...createRemote({ '/Vault': [entry('/Vault/sub', true)] }),
+			list: async (path) => {
+				if (normalizeKey(path) === '/Vault/sub') {
+					throw new Error('gateway exploded')
+				}
+				return [entry('/Vault/sub', true)]
+			},
+		}
+		const key = `key-interrupted-${Date.now()}`
+
+		await expect(
+			new ResumableRemoteTraversal({
+				remote,
+				remoteBaseDir: '/Vault',
+				kvKey: key,
+				concurrency: 4,
+				maxRetries: 1,
+			}).traverse(),
+		).rejects.toThrow(/gateway exploded/)
+
+		// Fast mode must not trust a snapshot taken mid-walk, even though the
+		// queue happened to be empty at that instant.
+		expect((await readCache(key))?.fullScanAt).toBeUndefined()
+	})
 })
