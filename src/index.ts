@@ -6,9 +6,10 @@ import './assets/styles/global.css'
 
 import './webdav-patch'
 
-import { Menu, normalizePath, Plugin } from 'obsidian'
+import { Menu, Notice, normalizePath, Plugin } from 'obsidian'
 import { createSelectedTextContextItem } from './ai/chat/context/user-context'
 import { registerChatboxAiIcon } from './assets/icons/obsidian-nutstore-ai-icon'
+import RemoteDirPickerModal from './components/RemoteDirPickerModal'
 import { SyncRibbonManager } from './components/SyncRibbonManager'
 import { emitCancelSync } from './events'
 import i18n from './i18n'
@@ -182,6 +183,21 @@ export default class QuarkSyncPlugin extends Plugin {
 		return [quark.appId, quark.signKey, quark.accessToken].every(
 			(value) => value.trim() !== '',
 		)
+	}
+
+	/**
+	 * Opens the remote folder picker; used by the command and the settings tab.
+	 * Returns the modal so callers (and the acceptance harness) can inspect it.
+	 */
+	openRemoteDirPicker() {
+		const modal = new RemoteDirPickerModal(this.app, this, async (path) => {
+			this.settings.remoteDir = path
+			await this.settingsService.saveSettings()
+			new Notice(i18n.t('settings.remoteDirPicker.chosen', { path }))
+			await this.settingTab?.rerenderIfVisible()
+		})
+		modal.open()
+		return modal
 	}
 
 	get remoteBaseDir() {

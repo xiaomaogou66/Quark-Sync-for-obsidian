@@ -13,6 +13,30 @@
 			"desc": "本仓库与夸克网盘中的哪个文件夹同步。留空时使用仓库名，文件夹会自动创建在根目录 FID 之下。",
 			"placeholder": "例如 /MyNotes"
 		},
+		"remoteDirPicker": {
+			"title": "选择远端同步目录",
+			"desc": "浏览网盘目录，选中一个作为同步根目录。目录不存在时可在这里直接创建。",
+			"browse": "浏览目录",
+			"root": "根目录",
+			"current": "当前",
+			"up": "返回上一层",
+			"empty": "这个目录下没有子目录",
+			"loading": "正在加载…",
+			"retry": "重试",
+			"failed": "列出目录失败",
+			"cancel": "取消",
+			"choose": "同步到此处",
+			"chosen": "同步目录已设为 {{path}}",
+			"suggest": "建议使用仓库同名目录：{{path}}",
+			"useSuggestion": "创建并使用仓库同名目录",
+			"newFolder": {
+				"name": "新建文件夹",
+				"placeholder": "文件夹名称",
+				"create": "创建",
+				"emptyName": "请输入文件夹名称"
+			},
+			"command": "选择远端同步目录"
+		},
 		"checkConnection": {
 			"name": "检查连接",
 			"desc": "点击检查 WebDAV 连接",

@@ -889,3 +889,45 @@
 .quark-sync-progress-indeterminate {
 	animation: quark-sync-progress-indeterminate 1.4s ease-in-out infinite;
 }
+
+/* Remote directory picker */
+.quark-sync-dir-picker .quark-sync-dir-picker__crumbs {
+	margin: 0.5rem 0 0.25rem;
+	word-break: break-word;
+}
+.quark-sync-dir-picker .quark-sync-dir-picker__crumbs a {
+	cursor: pointer;
+}
+.quark-sync-dir-picker .quark-sync-dir-picker__sep {
+	color: var(--text-faint);
+}
+.quark-sync-dir-picker .quark-sync-dir-picker__path {
+	margin-bottom: 0.5rem;
+	font-family: var(--font-monospace);
+}
+.quark-sync-dir-picker .quark-sync-dir-picker__list {
+	max-height: 45vh;
+	overflow-y: auto;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	padding: 0.25rem 0.5rem;
+}
+.quark-sync-dir-picker .quark-sync-dir-picker__row {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	padding: 0.15rem 0;
+}
+.quark-sync-dir-picker .quark-sync-dir-picker__row a {
+	cursor: pointer;
+}
+.quark-sync-dir-picker .quark-sync-dir-picker__icon {
+	display: inline-flex;
+	width: 1rem;
+	justify-content: center;
+	color: var(--text-muted);
+}
+.quark-sync-dir-picker .quark-sync-dir-picker__error {
+	margin: 0.5rem 0;
+	white-space: pre-wrap;
+}

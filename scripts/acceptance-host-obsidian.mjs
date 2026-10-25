@@ -17,7 +17,7 @@
 
 import { spawn } from 'node:child_process'
 import { randomBytes } from 'node:crypto'
-import { cp, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
+import { cp, mkdir, mkdtemp, readdir, readFile, rm, stat, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { setTimeout as delay } from 'node:timers/promises'
@@ -110,6 +110,23 @@ async function evaluate(client, expression) {
 	return result.result.value
 }
 
+/** Fails fast when main.js predates the newest source file. */
+async function newestSourceMtime() {
+	let newest = 0
+	const walk = async (dir) => {
+		for (const entry of await readdir(dir, { withFileTypes: true })) {
+			const full = join(dir, entry.name)
+			if (entry.isDirectory()) {
+				await walk(full)
+			} else if (/\.(ts|tsx|css|json|mjs)$/.test(entry.name)) {
+				newest = Math.max(newest, (await stat(full)).mtimeMs)
+			}
+		}
+	}
+	await walk(join(ROOT, 'src'))
+	return newest
+}
+
 async function main() {
 	const workDir = await mkdtemp(join(tmpdir(), 'quark-obsidian-accept-'))
 	const vault = join(workDir, 'vault')
@@ -130,6 +147,18 @@ async function main() {
 		await writeFile(
 			join(vault, '.obsidian', 'app.json'),
 			JSON.stringify({ promptDelete: false }),
+		)
+
+		const [bundleStat, newestSource] = await Promise.all([
+			stat(join(ROOT, 'main.js')),
+			newestSourceMtime(),
+		])
+		record(
+			'build is up to date',
+			bundleStat.mtimeMs >= newestSource,
+			bundleStat.mtimeMs >= newestSource
+				? 'main.js is newer than src'
+				: 'main.js is stale — run `pnpm build` first',
 		)
 
 		const manifest = JSON.parse(
@@ -296,6 +325,69 @@ async function main() {
 				'webdav gateway panel renders',
 				providerSwitch?.hasWebdavUrl === true,
 				JSON.stringify(providerSwitch),
+			)
+
+			// A fresh vault shows Obsidian's "trust folder / trust author" prompt,
+			// which must be dismissed or it swallows every modal we open afterwards.
+			const trustDismissed = await evaluate(
+				client,
+				`(async () => {
+					const dialogs = Array.from(
+						document.querySelectorAll('.modal-container .modal'),
+					).filter((el) => /trust|信任/i.test(el.className + el.textContent));
+					for (const dialog of dialogs) {
+						const primary = dialog.querySelector('button.mod-cta') || dialog.querySelector('button');
+						primary?.click();
+						await new Promise((r) => setTimeout(r, 400));
+					}
+					return { count: dialogs.length, remaining: document.querySelectorAll('.modal').length };
+				})()`,
+			)
+			record(
+				'obsidian trust prompt dismissed',
+				typeof trustDismissed?.count === 'number',
+				JSON.stringify(trustDismissed),
+			)
+
+			// Remote directory picker. Obsidian 1.14 attaches modals to the active
+			// window's document, so the DOM query is unreliable here; assert on the
+			// returned modal instance instead (class, rendered text, error state).
+			const picker = await evaluate(
+				client,
+				`(async () => {
+					const instance = app.plugins.plugins['${PLUGIN_ID}'];
+					instance.settings.remoteProvider = 'webdav';
+					instance.settings.webdav.baseUrl = 'http://127.0.0.1:1/dav';
+					instance.settings.remoteDir = '/';
+					const errors = [];
+					const onRejection = (event) => errors.push(String(event.reason?.message ?? event.reason));
+					window.addEventListener('unhandledrejection', onRejection);
+					const modal = instance.openRemoteDirPicker();
+					await new Promise((r) => setTimeout(r, 1500));
+					window.removeEventListener('unhandledrejection', onRejection);
+					return {
+						className: modal?.modalEl?.className ?? '',
+						text: (modal?.contentEl?.textContent ?? '').slice(0, 300),
+						errors,
+					};
+				})()`,
+			)
+			const pickerText = String(picker?.text ?? '')
+				.replace(/\s+/g, ' ')
+				.trim()
+			record(
+				'remote directory picker opens',
+				String(picker?.className ?? '').includes('quark-sync-dir-picker'),
+				String(picker?.className ?? ''),
+			)
+			record(
+				'picker renders breadcrumb and readable state',
+				pickerText.length > 10 &&
+					/(root|根目录)/i.test(pickerText) &&
+					/(Could not list|列出目录失败|Go up|返回上一层|folder|目录)/i.test(
+						pickerText,
+					),
+				`${pickerText.slice(0, 120)}${picker?.errors?.length ? ` errors=${JSON.stringify(picker.errors)}` : ''}`,
 			)
 
 			// Reload to prove the plugin survives an unload/load cycle.

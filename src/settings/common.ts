@@ -1,6 +1,7 @@
 import { parse as bytesParse } from 'bytes-iec'
 import { clamp, isNil } from 'lodash-es'
 import { DropdownComponent, Notice, Setting, TextComponent } from 'obsidian'
+import RemoteDirPickerModal from '~/components/RemoteDirPickerModal'
 import SyncPolicyModal from '~/components/SyncPolicyModal'
 import i18n from '~/i18n'
 import { ConflictStrategy } from '~/sync/tasks/conflict-resolve.task'
@@ -26,7 +27,7 @@ export default class CommonSettings extends BaseSettings {
 			.setName(i18n.t('settings.sections.common'))
 			.setHeading()
 
-		new Setting(this.containerEl)
+		const remoteDirSetting = new Setting(this.containerEl)
 			.setName(i18n.t('settings.remoteDir.name'))
 			.setDesc(i18n.t('settings.remoteDir.desc'))
 			.addText((text) => {
@@ -42,6 +43,30 @@ export default class CommonSettings extends BaseSettings {
 					void this.display()
 				})
 			})
+
+		remoteDirSetting.addButton((button) => {
+			button
+				.setIcon('folder-search')
+				.setTooltip(i18n.t('settings.remoteDirPicker.browse'))
+				.onClick(() => {
+					if (!this.plugin.isAccountConfigured()) {
+						new Notice(i18n.t('sync.error.accountNotConfigured'))
+						return
+					}
+					new RemoteDirPickerModal(
+						this.app,
+						this.plugin,
+						async (path) => {
+							this.plugin.settings.remoteDir = path
+							await this.plugin.settingsService.saveSettings()
+							new Notice(
+								i18n.t('settings.remoteDirPicker.chosen', { path }),
+							)
+							void this.display()
+						},
+					).open()
+				})
+		})
 
 		let syncPolicyDropdown!: DropdownComponent
 		new Setting(this.containerEl)

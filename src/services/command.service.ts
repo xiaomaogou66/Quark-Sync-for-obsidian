@@ -90,6 +90,19 @@ export default class CommandService extends BaseService {
 		})
 
 		this.plugin.addCommand({
+			id: 'browse-remote-dir',
+			name: i18n.t('settings.remoteDirPicker.command'),
+			icon: 'folder-search',
+			callback: () => {
+				if (!this.plugin.isAccountConfigured()) {
+					new Notice(i18n.t('sync.error.accountNotConfigured'))
+					return
+				}
+				this.plugin.openRemoteDirPicker()
+			},
+		})
+
+		this.plugin.addCommand({
 			id: 'show-sync-progress',
 			name: i18n.t('sync.showProgressButton'),
 			icon: 'activity',

@@ -21,6 +21,30 @@
 			"desc": "Which folder inside Quark Drive this vault syncs with. Leave empty to use the vault name; the folder is created under the configured root FID.",
 			"placeholder": "e.g. /MyNotes"
 		},
+		"remoteDirPicker": {
+			"title": "Choose remote sync folder",
+			"desc": "Browse the drive and pick the folder that should hold this vault. Missing folders can be created here.",
+			"browse": "Browse folders",
+			"root": "root",
+			"current": "Current",
+			"up": "Go up one level",
+			"empty": "No subfolders here",
+			"loading": "Loading…",
+			"retry": "Retry",
+			"failed": "Could not list the folder",
+			"cancel": "Cancel",
+			"choose": "Sync here",
+			"chosen": "Sync folder set to {{path}}",
+			"suggest": "Suggested vault-named folder: {{path}}",
+			"useSuggestion": "Create and use vault-named folder",
+			"newFolder": {
+				"name": "New folder",
+				"placeholder": "Folder name",
+				"create": "Create",
+				"emptyName": "Enter a folder name"
+			},
+			"command": "Choose remote sync folder"
+		},
 		"backupWarning": {
 			"name": "Backup warning",
 			"desc": "⚠️ Note: Sync process will modify or delete local files. Please backup important files before syncing."
