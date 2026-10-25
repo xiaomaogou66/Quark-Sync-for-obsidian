@@ -15,6 +15,7 @@
 		"test:unit": "vitest --run",
 		"test:models-api": "jiti scripts/update-models-api.ts --check",
 		"test:obsidian": "node scripts/run-obsidian-integration.mjs",
+		"test:obsidian:host": "node scripts/acceptance-host-obsidian.mjs",
 		"update:models-api": "jiti scripts/update-models-api.ts",
 		"postinstall": "lefthook install"
 	},
