@@ -110,6 +110,23 @@ export default defineConfig([
 		},
 	},
 
+	// Live probes are Node-only vitest harnesses that talk to real services;
+	// Obsidian's runtime (and therefore `requestUrl`/`fetch` restrictions) is
+	// not available, so they get the Node environment instead.
+	{
+		files: ['src/**/*-live-probe.test.ts'],
+		languageOptions: {
+			globals: {
+				...disabledBrowserGlobals,
+				...globals.node,
+			},
+		},
+		rules: {
+			'no-restricted-globals': 'off',
+			'obsidianmd/no-nodejs-modules': 'off',
+		},
+	},
+
 	// Solid owns TSX-specific semantics.
 	{
 		files: ['**/*.tsx'],

@@ -2,7 +2,6 @@ import { deflateSync, inflateSync } from 'fflate/browser'
 import { hash as hashObject } from 'ohash'
 import { normalize } from 'path-browserify'
 import superjson from 'superjson'
-import { BufferLike } from 'webdav'
 import {
 	cacheUploadMetaKV,
 	traverseWebDAVKV,
@@ -49,16 +48,14 @@ export default class CacheServiceV1 extends BaseService {
 				return false
 			}
 
-			const webdav = await this.plugin.webDAVService.createWebDAVClient()
+			const remote = await this.plugin.webDAVService.createRemoteFs()
 			const filePath = this.remoteCacheFilePath
-			const fileExists = await webdav.exists(filePath).catch(() => false)
+			const fileExists = await remote.exists(filePath).catch(() => false)
 			if (!fileExists) {
 				return false
 			}
 
-			const fileContent = (await webdav.getFileContents(filePath, {
-				format: 'binary',
-			})) as BufferLike
+			const fileContent = await remote.readFile(filePath)
 			const exportedStorage = this.decodeStorage(fileContent)
 			if (!exportedStorage.traverseWebDAVCache) {
 				return false
@@ -110,11 +107,11 @@ export default class CacheServiceV1 extends BaseService {
 			const nodesHash = hashObject(filteredCache.nodes)
 			const metaKey = await this.getKVKey()
 
-			const webdav = await this.plugin.webDAVService.createWebDAVClient()
+			const remote = await this.plugin.webDAVService.createRemoteFs()
 			if (isCancelled()) {
 				return false
 			}
-			const remoteExists = await webdav
+			const remoteExists = await remote
 				.exists(this.remoteCacheFilePath)
 				.catch(() => false)
 
@@ -135,18 +132,14 @@ export default class CacheServiceV1 extends BaseService {
 				return false
 			}
 
-			await webdav.createDirectory(this.remoteCacheDirPath, { recursive: true })
+			await remote.mkdir(this.remoteCacheDirPath)
 			if (isCancelled()) {
 				return false
 			}
-			const uploaded = await webdav.putFileContents(
+			await remote.writeFile(
 				this.remoteCacheFilePath,
 				uint8ArrayToArrayBuffer(encodedStorage),
-				{ overwrite: true },
 			)
-			if (!uploaded) {
-				throw new Error('Remote traversal cache upload failed')
-			}
 
 			await cacheUploadMetaKV.set(metaKey, { nodesHash })
 			logger.info('Saved remote traversal cache')
@@ -167,7 +160,7 @@ export default class CacheServiceV1 extends BaseService {
 		}) as Uint8Array<ArrayBuffer>
 	}
 
-	private decodeStorage(fileContent: BufferLike): ExportedStorage {
+	private decodeStorage(fileContent: ArrayBuffer): ExportedStorage {
 		if (!fileContent || fileContent.byteLength === 0) {
 			throw new Error('Cache file is empty')
 		}

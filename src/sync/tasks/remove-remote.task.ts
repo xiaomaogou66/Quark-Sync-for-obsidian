@@ -4,7 +4,7 @@ export default class RemoveRemoteTask extends BaseTask {
 	async exec() {
 		try {
 			this.logger.info(`[RemoveRemote] ${this.remotePath}`)
-			await this.webdav.deleteFile(this.remotePath)
+			await this.remote.remove(this.remotePath)
 			return { success: true } as const
 		} catch (e) {
 			this.logger.error(`[RemoveRemote] failed: ${this.remotePath}`, e)

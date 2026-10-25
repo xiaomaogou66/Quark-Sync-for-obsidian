@@ -1,4 +1,5 @@
 import { existsLocalPath, readLocalBinary } from '~/utils/local-vault-io'
+import { statVaultItem } from '~/utils/stat-vault-item'
 import { BaseTask, toTaskError } from './task.interface'
 
 export default class PushTask extends BaseTask {
@@ -13,13 +14,11 @@ export default class PushTask extends BaseTask {
 			this.logger.info(
 				`[PushTask] ${this.localPath} → ${this.remotePath} (${content.byteLength} bytes)`,
 			)
-			const res = await this.webdav.putFileContents(this.remotePath, content, {
-				overwrite: true,
+			const stat = await statVaultItem(this.vault, this.localPath)
+			await this.remote.writeFile(this.remotePath, content, {
+				mtime: stat?.mtime,
 			})
-			if (!res) {
-				throw new Error('Upload failed')
-			}
-			return { success: res }
+			return { success: true } as const
 		} catch (e) {
 			this.logger.error(`[PushTask] failed: ${this.localPath}`, e)
 			return { success: false, error: toTaskError(e, this) }

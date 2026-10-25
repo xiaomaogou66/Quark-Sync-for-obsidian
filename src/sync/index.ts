@@ -2,7 +2,6 @@ import { chunk } from 'lodash-es'
 import { Notice, Platform, Vault, moment, normalizePath } from 'obsidian'
 import { dirname } from 'path-browserify'
 import { Subscription } from 'rxjs'
-import { WebDAVClient } from 'webdav'
 import DeleteConfirmModal from '~/components/DeleteConfirmModal'
 import FailedTasksModal, { FailedTaskInfo } from '~/components/FailedTasksModal'
 import TaskListConfirmModal from '~/components/TaskListConfirmModal'
@@ -21,6 +20,8 @@ import {
 import IFileSystem from '~/fs/fs.interface'
 import { LocalVaultFileSystem } from '~/fs/local-vault'
 import { NutstoreFileSystem } from '~/fs/nutstore'
+import { RemoteFileSystem } from '~/fs/remote'
+import type { RemoteFs } from '~/remote/remote-fs.interface'
 import i18n from '~/i18n'
 import CacheService from '~/services/cache.service.v1'
 import { SyncPolicy } from '~/settings'
@@ -41,6 +42,7 @@ import {
 	getNutstoreNsdavEndpoint,
 } from '~/utils/nutstore-endpoints'
 import { statVaultItem } from '~/utils/stat-vault-item'
+import type { WebDAVTraversalProgress } from '~/utils/traverse-webdav'
 import { stdRemotePath } from '~/utils/std-remote-path'
 import NutstorePlugin from '..'
 import ReceiveOnlySyncDecider, {
@@ -115,19 +117,22 @@ export class NutstoreSync {
 		private plugin: NutstorePlugin,
 		private options: {
 			vault: Vault
+			/** Nutstore-only credential; empty for path/fid addressed backends. */
 			token: string
 			remoteAccountId: string
 			remoteBaseDir: string
-			webdav: WebDAVClient
+			remote: RemoteFs
 		},
 	) {
 		this.options = Object.freeze(this.options)
 		const filterRules = computeEffectiveFilterRules(plugin)
-		this.remoteFs = new NutstoreFileSystem({
-			...this.options,
+		const remoteFsOptions = {
+			vault: this.options.vault,
 			settings: plugin.settings,
+			remoteAccountId: this.options.remoteAccountId,
+			remoteBaseDir: this.options.remoteBaseDir,
 			filterRules,
-			onTraversalProgress: (traversal) => {
+			onTraversalProgress: (traversal: WebDAVTraversalProgress) => {
 				this.emitPreparationProgress({
 					phase:
 						traversal.phase === 'complete' ? 'analyzing' : 'traversingRemote',
@@ -135,7 +140,17 @@ export class NutstoreSync {
 				})
 			},
 			throwIfCancelled: () => this.throwIfCancelled(),
-		})
+		}
+		this.remoteFs =
+			this.options.remote.kind === 'webdav'
+				? new NutstoreFileSystem({
+						...remoteFsOptions,
+						token: this.options.token,
+					})
+				: new RemoteFileSystem({
+						...remoteFsOptions,
+						remote: this.options.remote,
+					})
 		this.localFS = new LocalVaultFileSystem({
 			vault: this.options.vault,
 			syncRecord: new SyncRecord(
@@ -180,14 +195,16 @@ export class NutstoreSync {
 			}
 
 			const settings = this.settings
-			const webdav = this.webdav
+			const remote = this.remote
 			const remoteBaseDir = stdRemotePath(this.options.remoteBaseDir)
 			this.logger.info('[Sync] Endpoint:', {
+				backend: remote.kind,
 				loginMode: settings.loginMode,
 				dav: getNutstoreDavEndpoint(settings),
 				nsdav: getNutstoreNsdavEndpoint(settings),
 				remoteBaseDir,
 			})
+			await remote.init?.()
 			const syncRecord = new SyncRecord(
 				getDBKey(this.vault.getName(), this.remoteBaseDir),
 				syncRecordKV,
@@ -195,7 +212,7 @@ export class NutstoreSync {
 			const cacheService = new CacheService(this.plugin)
 
 			this.emitPreparationProgress({ phase: 'checkingRemote' })
-			let remoteBaseDirExits = await webdav.exists(remoteBaseDir)
+			let remoteBaseDirExits = await remote.exists(remoteBaseDir)
 
 			if (!remoteBaseDirExits) {
 				await syncRecord.drop()
@@ -211,9 +228,7 @@ export class NutstoreSync {
 					}
 				}
 				try {
-					await webdav.createDirectory(this.options.remoteBaseDir, {
-						recursive: true,
-					})
+					await remote.mkdir(this.options.remoteBaseDir)
 					break
 				} catch (e) {
 					if (is503Error(e as Error)) {
@@ -226,7 +241,7 @@ export class NutstoreSync {
 								shouldReloadSettings: false,
 							}
 						}
-						remoteBaseDirExits = await webdav.exists(remoteBaseDir)
+						remoteBaseDirExits = await remote.exists(remoteBaseDir)
 					} else {
 						throw e
 					}
@@ -432,9 +447,9 @@ export class NutstoreSync {
 							return
 						}
 
-						// Check if parent directory exists remotely using webdav.stat
+						// Check if the parent directory exists remotely
 						try {
-							await webdav.stat(parentRemotePath)
+							await remote.stat(parentRemotePath)
 							// Directory exists, mark it and all parents as existing
 							markPathAndParentsAsExisting(parentRemotePath)
 						} catch (e) {
@@ -443,7 +458,7 @@ export class NutstoreSync {
 							// No need to check parent's parent since createDirectory uses recursive: true
 							const mkdirTask = new MkdirRemoteTask({
 								vault: this.vault,
-								webdav: webdav,
+								remote: remote,
 								remoteBaseDir: this.remoteBaseDir,
 								remotePath: parentRemotePath,
 								localPath: parentLocalPath,
@@ -823,8 +838,8 @@ export class NutstoreSync {
 		return this.plugin.app
 	}
 
-	get webdav() {
-		return this.options.webdav
+	get remote() {
+		return this.options.remote
 	}
 
 	get vault() {

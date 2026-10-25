@@ -87,6 +87,62 @@
 			"filters": "过滤规则",
 			"ai": "AI 设置"
 		},
+		"remoteProvider": {
+			"name": "网盘类型",
+			"desc": "选择同步所使用的网盘后端",
+			"nutstore": "坚果云（WebDAV）",
+			"quark": "夸克网盘（开放平台）"
+		},
+		"quark": {
+			"hint": "夸克网盘不提供 WebDAV，需要使用开放平台应用：在夸克开放平台创建应用后，把 app_id、sign_key 与授权得到的令牌填到这里。凭据只保存在本地。",
+			"openPlatform": "夸克开放平台",
+			"appId": {
+				"name": "AppID",
+				"desc": "开放平台应用的 app_id",
+				"placeholder": ""
+			},
+			"signKey": {
+				"name": "SignKey",
+				"desc": "开放平台应用的 sign_key，用于请求签名",
+				"placeholder": ""
+			},
+			"accessToken": {
+				"name": "Access Token",
+				"desc": "OAuth 授权后获得的访问令牌",
+				"placeholder": ""
+			},
+			"refreshToken": {
+				"name": "Refresh Token",
+				"desc": "访问令牌过期后用于刷新",
+				"placeholder": ""
+			},
+			"refreshEndpoint": {
+				"name": "令牌刷新中转",
+				"desc": "可选。留空时，令牌过期后需要在设置里手动填新的 Access Token",
+				"placeholder": ""
+			},
+			"rootFid": {
+				"name": "根目录 FID",
+				"desc": "同步根目录在夸克网盘中的 fid，默认 0（网盘根目录）",
+				"placeholder": "0"
+			},
+			"folderFileType": {
+				"name": "目录标记值",
+				"desc": "接口返回的 file_type 等于该值时视为文件夹，默认 0",
+				"placeholder": "0"
+			},
+			"overwriteMode": {
+				"name": "覆盖方式",
+				"desc": "同目录同名文件已存在时的处理方式",
+				"reuse": "复用同名文件（推荐，省流量）",
+				"deleteFirst": "先删除再上传（更保险，旧文件进回收站）"
+			},
+			"checkConnection": {
+				"name": "检查夸克连接",
+				"desc": "列出根目录内容，验证凭据是否可用",
+				"button": "检查连接"
+			}
+		},
 		"tabs": {
 			"sync": "同步",
 			"ai": "AI",

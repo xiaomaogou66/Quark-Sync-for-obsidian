@@ -35,13 +35,29 @@ Nutstore Sync 是面向坚果云用户的 Obsidian 同步插件，支持桌面�
 ### 🚀 快速开始
 
 1. 从 Obsidian 社区插件中安装并启用 **Nutstore Sync**。
-2. 打开插件设置，使用坚果云授权登录；也可以选择手动模式，填写 WebDAV 应用密码。
+2. 打开插件设置，选择网盘类型（坚果云或夸克网盘），然后完成对应授权登录。
 3. 选择坚果云中的远程目录和同步策略，然后检查 WebDAV 连接。
 4. 点击功能区的同步图标，或从命令面板运行 **Start sync**。
 5. 首次同步前查看操作预览，确认无误后开始同步。
 
 > [!IMPORTANT]
 > 首次同步前请备份 Vault。带有“覆盖”或“还原”含义的镜像策略可能删除另一端独有的文件。
+
+### 🗄️ 也可以同步到夸克网盘
+
+设置中的 **网盘类型** 可以在坚果云与夸克网盘之间切换。夸克网盘不提供 WebDAV，也不支持账号密码登录，因此使用前需要：
+
+1. 在 [夸克开放平台](https://open.quark.cn/) 创建应用，取得 `app_id` 与 `sign_key`。
+2. 完成 OAuth 授权，取得 `access_token` 与 `refresh_token`。
+3. 在插件设置中选择 **夸克网盘（开放平台）**，填入上述四项与根目录 FID（默认为 `0`）。
+4. 点击 **检查夸克连接**，确认能列出根目录后再开始同步。
+
+> [!NOTE]
+> - 凭据只保存在本地 Vault，不会上传到任何服务器；`sign_key` 属于你自建的应用。
+> - 夸克开放接口没有增量变更流，因此每次同步都会重新遍历远端目录（本地 Vault 较大时请耐心等待）。
+> - 上传时会写入本地修改时间，双向同步仍按修改时间比较；若发现同名文件被上传成多份，请把 **覆盖方式** 改为“先删除再上传”。
+> - 若 `access_token` 过期：填了 **令牌刷新中转**（兼容 OpenList 的刷新接口）会自动续期，否则需要在设置里手动填入新令牌。
+> - 非会员账号的下载速度受夸克限速影响，首次同步大 Vault 可能很慢。
 
 ### 🔄 按你的方式同步
 
@@ -140,13 +156,29 @@ Nutstore Sync is an Obsidian plugin for syncing a vault with Nutstore on desktop
 ### 🚀 Quick Start
 
 1. Install and enable **Nutstore Sync** from Obsidian Community Plugins.
-2. Open the plugin settings and sign in through Nutstore authorization, or enter a WebDAV app password in manual mode.
+2. Open the plugin settings, pick a drive backend (Nutstore or Quark Drive), then complete that backend's authorization.
 3. Choose a remote Nutstore directory and a sync policy, then check the WebDAV connection.
 4. Click the sync ribbon icon, or run **Start sync** from the command palette.
 5. Review the planned operations before starting your first sync.
 
 > [!IMPORTANT]
 > Back up your vault before the first sync. Mirror policies that override or revert changes may delete files that exist on only one side.
+
+### 🗄️ Sync to Quark Drive instead
+
+The **Drive backend** setting switches between Nutstore and Quark Drive. Quark exposes no WebDAV endpoint and no username/password login, so:
+
+1. Create an app on the [Quark open platform](https://open.quark.cn/) to get an `app_id` and `sign_key`.
+2. Complete the OAuth flow to obtain an `access_token` and `refresh_token`.
+3. In the plugin settings pick **Quark Drive (open platform)** and paste all four values plus a root folder FID (default `0`).
+4. Run **Check Quark connection** to confirm the root folder can be listed before syncing.
+
+> [!NOTE]
+> - Credentials stay in the local vault and are never uploaded; the `sign_key` belongs to the app you created.
+> - The Quark open API has no change feed, so every sync re-walks the remote tree (allow extra time for large vaults).
+> - Local modification times are written during upload, so two-way sync can still compare mtimes. If overwrites leave duplicate names behind, switch **Overwrite mode** to “delete first, then upload”.
+> - When the `access_token` expires, a configured **token refresh relay** (OpenList-compatible) renews it automatically; otherwise paste a fresh token.
+> - Download speed for free accounts is throttled by Quark, so the first sync of a large vault can be slow.
 
 ### 🔄 Sync Your Way
 

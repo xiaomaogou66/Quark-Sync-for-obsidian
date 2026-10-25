@@ -22,7 +22,7 @@ export default class PullTask extends BaseTask {
 			)
 			await downloadRemoteFile({
 				vault: this.vault,
-				webdav: this.webdav,
+				remote: this.remote,
 				remotePath: this.remotePath,
 				localPath: this.localPath,
 				remoteSize: this.remoteSize,

@@ -33,6 +33,12 @@ export const traverseWebDAVKV = createRecoverableStorage<TraverseWebDAVCache>(
 	'traverse_webdav_cache',
 )
 
+/** path → backend folder id, used by fid-addressed backends such as Quark. */
+export type RemoteFidMap = Record<string, string>
+
+export const remoteFidKV =
+	createRecoverableStorage<RemoteFidMap>('remote_fid_map')
+
 export interface CacheUploadMeta {
 	nodesHash: string
 }

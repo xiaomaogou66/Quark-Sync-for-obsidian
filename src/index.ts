@@ -170,6 +170,11 @@ export default class NutstorePlugin extends Plugin {
 	}
 
 	async getToken() {
+		if (this.settings.remoteProvider === 'quark') {
+			// Quark authenticates through its own open-platform token headers, no
+			// Basic-Auth string is needed by the backend.
+			return toBase64(this.settings.quark.accessToken.trim())
+		}
 		let token
 		if (this.settings.loginMode === 'sso') {
 			let oauth
@@ -186,6 +191,10 @@ export default class NutstorePlugin extends Plugin {
 	}
 
 	async getRemoteAccountId() {
+		if (this.settings.remoteProvider === 'quark') {
+			const quark = this.settings.quark
+			return (quark.userId.trim() || quark.appId.trim()).trim()
+		}
 		if (this.settings.loginMode === 'sso') {
 			return (await this.getDecryptedOAuthInfo()).username.trim()
 		}
@@ -197,6 +206,12 @@ export default class NutstorePlugin extends Plugin {
 	 * @returns true 表示配置完整，false 表示未配置或配置不完整
 	 */
 	isAccountConfigured(): boolean {
+		if (this.settings.remoteProvider === 'quark') {
+			const quark = this.settings.quark
+			return [quark.appId, quark.signKey, quark.accessToken].every(
+				(value) => value.trim() !== '',
+			)
+		}
 		if (this.settings.loginMode === 'sso') {
 			// SSO 模式：检查是否有 OAuth 响应数据
 			return (

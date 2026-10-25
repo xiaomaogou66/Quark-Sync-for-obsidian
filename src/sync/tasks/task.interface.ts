@@ -1,6 +1,6 @@
 import type { Vault } from 'obsidian'
 import { isAbsolute, join } from 'path-browserify'
-import { WebDAVClient } from 'webdav'
+import type { RemoteFs } from '~/remote/remote-fs.interface'
 import { SyncRecord } from '~/storage/sync-record'
 import type { SyncLogger } from '~/sync/log'
 import { MaybePromise } from '~/utils/types'
@@ -8,7 +8,7 @@ import { normalizeVaultPath } from '~/utils/normalize-vault-path'
 
 export interface BaseTaskOptions {
 	vault: Vault
-	webdav: WebDAVClient
+	remote: RemoteFs
 	remoteBaseDir: string
 	remotePath: string
 	localPath: string
@@ -40,8 +40,8 @@ export abstract class BaseTask {
 		return this.options.syncRecord
 	}
 
-	get webdav() {
-		return this.options.webdav
+	get remote() {
+		return this.options.remote
 	}
 
 	get remoteBaseDir() {

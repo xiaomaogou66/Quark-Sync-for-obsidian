@@ -96,12 +96,13 @@ export default class SyncExecutorService extends BaseService {
 
 			await waitUntil(() => this.plugin.isSyncing === false, 500)
 
+			const remote = await this.plugin.webDAVService.createRemoteFs()
 			const sync = new NutstoreSync(this.plugin, {
 				vault: this.plugin.app.vault,
 				token: await this.plugin.getToken(),
 				remoteAccountId: await this.plugin.getRemoteAccountId(),
 				remoteBaseDir: this.plugin.remoteBaseDir,
-				webdav: await this.plugin.webDAVService.createWebDAVClient(),
+				remote,
 			})
 
 			result = await sync.start({

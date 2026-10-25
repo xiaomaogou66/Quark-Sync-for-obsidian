@@ -7,16 +7,40 @@ import { addClassTokens, removeClassTokens } from '~/utils/class-tokens'
 import { OAuthResponse } from '~/utils/decrypt-ticket-response'
 import { is503Error } from '~/utils/is-503-error'
 import logger from '~/utils/logger'
+import type { RemoteProvider } from '~/settings'
+import QuarkAccountSettings from './quark'
 import BaseSettings from './settings.base'
 
 export default class AccountSettings extends BaseSettings {
 	private updateOAuthUrlTimer: number | null = null
+	private quarkSettings: QuarkAccountSettings | null = null
 
 	async display() {
 		this.containerEl.empty()
 		new Setting(this.containerEl)
 			.setName(i18n.t('settings.sections.account'))
 			.setHeading()
+
+		new Setting(this.containerEl)
+			.setName(i18n.t('settings.remoteProvider.name'))
+			.setDesc(i18n.t('settings.remoteProvider.desc'))
+			.addDropdown((dropdown) =>
+				dropdown
+					.addOption('nutstore', i18n.t('settings.remoteProvider.nutstore'))
+					.addOption('quark', i18n.t('settings.remoteProvider.quark'))
+					.setValue(this.plugin.settings.remoteProvider)
+					.onChange(async (value) => {
+						this.plugin.settings.remoteProvider =
+							value === 'quark' ? 'quark' : ('nutstore' satisfies RemoteProvider)
+						await this.plugin.settingsService.saveSettings()
+						void this.display()
+					}),
+			)
+
+		if (this.plugin.settings.remoteProvider === 'quark') {
+			await this.displayQuarkSettings()
+			return
+		}
 
 		new Setting(this.containerEl)
 			.setName(i18n.t('settings.loginMode.name'))
@@ -38,6 +62,16 @@ export default class AccountSettings extends BaseSettings {
 		} else {
 			this.displayManualLoginSettings()
 		}
+	}
+
+	private async displayQuarkSettings() {
+		this.quarkSettings = new QuarkAccountSettings(
+			this.app,
+			this.plugin,
+			this.settings,
+			this.containerEl,
+		)
+		await this.quarkSettings.display()
 	}
 
 	async hide() {

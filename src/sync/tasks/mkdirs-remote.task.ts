@@ -30,11 +30,9 @@ export default class MkdirsRemoteTask extends BaseTask {
 					i18n.t('sync.error.localPathNotFound', { path: this.localPath }),
 				)
 			}
-			// Create the deepest directory with recursive: true
-			// This will automatically create all parent directories
-			await this.webdav.createDirectory(this.remotePath, {
-				recursive: true,
-			})
+			// `RemoteFs.mkdir` is recursive for every backend, so creating the
+			// deepest path also creates all parents.
+			await this.remote.mkdir(this.remotePath)
 			return { success: true } as const
 		} catch (e) {
 			this.logger.error(this, e)

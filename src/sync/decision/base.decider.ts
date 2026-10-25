@@ -46,7 +46,7 @@ export default abstract class BaseSyncDecider {
 		])
 
 		const commonTaskOptions = {
-			webdav: this.webdav,
+			remote: this.remote,
 			vault: this.vault,
 			remoteBaseDir: this.remoteBaseDir,
 			syncRecord: syncRecordStorage,
@@ -114,8 +114,8 @@ export default abstract class BaseSyncDecider {
 		}
 	}
 
-	get webdav() {
-		return this.sync.webdav
+	get remote() {
+		return this.sync.remote
 	}
 
 	get settings() {

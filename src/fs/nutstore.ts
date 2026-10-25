@@ -1,26 +1,18 @@
 import { Vault } from 'obsidian'
-import { isAbsolute, join, normalize } from 'path-browserify'
 import type { NutstoreSettings } from '~/settings'
 import {
 	ConfigDirSyncMode,
 	computeEffectiveFilterRulesFromParts,
 } from '~/utils/config-dir-rules'
 import { getTraversalWebDAVDBKey } from '~/utils/get-db-key'
-import {
-	compileFilterRules,
-	GlobFilterRule,
-	isPathIncluded,
-} from '~/utils/glob-match'
-import { isSub } from '~/utils/is-sub'
-import { stdRemotePath } from '~/utils/std-remote-path'
-import { isSyncCacheLocalPath } from '~/utils/sync-cache-file'
+import { GlobFilterRule } from '~/utils/glob-match'
 import { getNutstoreDavEndpoint } from '~/utils/nutstore-endpoints'
 import {
 	ResumableWebDAVTraversal,
 	type WebDAVTraversalProgress,
 } from '~/utils/traverse-webdav'
 import AbstractFileSystem from './fs.interface'
-import completeLossDir from './utils/complete-loss-dir'
+import { buildRemoteWalkResults } from './utils/build-remote-walk-results'
 
 export class NutstoreFileSystem implements AbstractFileSystem {
 	constructor(
@@ -56,29 +48,6 @@ export class NutstoreFileSystem implements AbstractFileSystem {
 		})
 		const traversedStats = await traversal.traverse()
 
-		if (traversedStats.length === 0) {
-			return []
-		}
-
-		const base = normalizeRemotePath(stdRemotePath(this.options.remoteBaseDir))
-		const statsByLocalPath = new Map<string, (typeof traversedStats)[number]>()
-		for (const stat of traversedStats) {
-			const absolutePath = normalizeRemotePath(
-				isAbsolute(stat.path) ? stat.path : join(base, stat.path),
-			)
-			if (!isSub(base, absolutePath)) {
-				continue
-			}
-
-			const localPath = absolutePath
-				.slice(base === '/' ? 1 : base.length)
-				.replace(/^\/+/, '')
-			if (!statsByLocalPath.has(localPath)) {
-				statsByLocalPath.set(localPath, { ...stat, path: localPath })
-			}
-		}
-		const stats = [...statsByLocalPath.values()]
-
 		const settings = this.options.filterRules
 			? undefined
 			: this.options.settings
@@ -91,26 +60,12 @@ export class NutstoreFileSystem implements AbstractFileSystem {
 						settings.filterRules,
 					)
 				: undefined)
-		const compiledRules = compileFilterRules(filterRules?.rules)
 
-		const includedStats = stats.filter(
-			(stat) =>
-				!isSyncCacheLocalPath(stat.path, this.options.vault.configDir) &&
-				isPathIncluded(stat.path, compiledRules, stat.isDir),
-		)
-		const completeStats = completeLossDir(stats, includedStats)
-		const completeStatPaths = new Set(completeStats.map((s) => s.path))
-		const results = stats.map((stat) => ({
-			stat,
-			ignored: !completeStatPaths.has(stat.path),
-		}))
-		return results
+		return buildRemoteWalkResults({
+			traversedStats,
+			remoteBaseDir: this.options.remoteBaseDir,
+			configDir: this.options.vault.configDir,
+			filterRules: { rules: filterRules?.rules ?? [] },
+		})
 	}
-}
-
-function normalizeRemotePath(path: string): string {
-	const normalized = normalize(path)
-	return normalized.length > 1 && normalized.endsWith('/')
-		? normalized.slice(0, -1)
-		: normalized
 }

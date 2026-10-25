@@ -129,6 +129,62 @@
 			"filters": "Filter rules",
 			"ai": "AI"
 		},
+		"remoteProvider": {
+			"name": "Drive backend",
+			"desc": "Which storage backend to sync with",
+			"nutstore": "Nutstore (WebDAV)",
+			"quark": "Quark Drive (open platform)"
+		},
+		"quark": {
+			"hint": "Quark Drive has no WebDAV endpoint. Create an app on the Quark open platform, then paste its app_id, sign_key and an OAuth token here. Credentials stay on this device.",
+			"openPlatform": "Quark open platform",
+			"appId": {
+				"name": "AppID",
+				"desc": "app_id of your open-platform app",
+				"placeholder": ""
+			},
+			"signKey": {
+				"name": "SignKey",
+				"desc": "sign_key of your open-platform app, used to sign requests",
+				"placeholder": ""
+			},
+			"accessToken": {
+				"name": "Access token",
+				"desc": "Access token obtained from the OAuth flow",
+				"placeholder": ""
+			},
+			"refreshToken": {
+				"name": "Refresh token",
+				"desc": "Used to refresh the access token once it expires",
+				"placeholder": ""
+			},
+			"refreshEndpoint": {
+				"name": "Token refresh relay",
+				"desc": "Optional. When empty, an expired token has to be replaced manually",
+				"placeholder": ""
+			},
+			"rootFid": {
+				"name": "Root folder FID",
+				"desc": "Quark fid used as the sync root, defaults to 0 (drive root)",
+				"placeholder": "0"
+			},
+			"folderFileType": {
+				"name": "Folder marker",
+				"desc": "file_type value that marks a folder, defaults to 0",
+				"placeholder": "0"
+			},
+			"overwriteMode": {
+				"name": "Overwrite mode",
+				"desc": "What to do when a file with the same name already exists",
+				"reuse": "Reuse the existing file (recommended)",
+				"deleteFirst": "Delete first, then upload (safer, old file goes to the recycle bin)"
+			},
+			"checkConnection": {
+				"name": "Check Quark connection",
+				"desc": "List the root folder to verify the credentials",
+				"button": "Check connection"
+			}
+		},
 		"tabs": {
 			"sync": "Sync",
 			"ai": "AI",

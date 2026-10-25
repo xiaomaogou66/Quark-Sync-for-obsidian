@@ -1,4 +1,3 @@
-import { BufferLike } from 'webdav'
 import i18n from '~/i18n'
 import { StatModel } from '~/model/stat.model'
 import { SyncRecordModel } from '~/model/sync-record.model'
@@ -12,7 +11,7 @@ import {
 	writeLocalText,
 } from '~/utils/local-vault-io'
 import { statVaultItem } from '~/utils/stat-vault-item'
-import { statWebDAVItem } from '~/utils/stat-webdav-item'
+import { statRemoteItem } from '~/utils/stat-remote-item'
 import {
 	IntelligentMergeParams,
 	IntelligentMergeResult,
@@ -57,7 +56,7 @@ export default class ConflictResolveTask extends BaseTask {
 
 			const remote =
 				this.options.remoteStat ??
-				(await statWebDAVItem(this.webdav, this.remotePath))
+				(await statRemoteItem(this.remote, this.remotePath))
 
 			if (remote.isDir) {
 				throw new Error('Remote path is a directory: ' + this.remotePath)
@@ -106,9 +105,7 @@ export default class ConflictResolveTask extends BaseTask {
 				}
 			}
 			const localContent = await readLocalBinary(this.vault, this.localPath)
-			await this.webdav.putFileContents(this.remotePath, localContent, {
-				overwrite: true,
-			})
+			await this.remote.writeFile(this.remotePath, localContent)
 			return { success: true } as const
 		} catch (e) {
 			this.logger.error(
@@ -126,7 +123,7 @@ export default class ConflictResolveTask extends BaseTask {
 			}
 			await downloadRemoteFile({
 				vault: this.vault,
-				webdav: this.webdav,
+				remote: this.remote,
 				remotePath: this.remotePath,
 				localPath: this.localPath,
 				remoteSize: remote.size,
@@ -155,10 +152,7 @@ export default class ConflictResolveTask extends BaseTask {
 				throw new Error('cannot find file in local fs: ' + this.localPath)
 			}
 			const localBuffer = await readLocalBinary(this.vault, this.localPath)
-			const remoteBuffer = (await this.webdav.getFileContents(this.remotePath, {
-				format: 'binary',
-				details: false,
-			})) as BufferLike
+			const remoteBuffer = await this.remote.readFile(this.remotePath)
 
 			if (arrayBufferEquals(localBuffer, remoteBuffer)) {
 				return { success: true } as const
@@ -215,15 +209,9 @@ export default class ConflictResolveTask extends BaseTask {
 			}
 
 			// If mergedText is different from remoteText, then both remote and local need to be updated.
-			const putResult = await this.webdav.putFileContents(
-				this.remotePath,
-				mergedText,
-				{ overwrite: true },
-			)
-
-			if (!putResult) {
+			await this.remote.writeFile(this.remotePath, mergedText).catch(() => {
 				throw new Error(i18n.t('sync.error.failedToUploadMerged'))
-			}
+			})
 
 			if (localText !== mergedText) {
 				await writeLocalText(this.vault, this.localPath, mergedText)
