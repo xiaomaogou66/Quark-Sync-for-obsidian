@@ -1,4 +1,5 @@
 import type QuarkSyncPlugin from '~/index'
+import { normalizeVaultPath } from './normalize-vault-path'
 import GlobMatch, {
 	compileFilterRules,
 	type GlobFilterRule,
@@ -106,10 +107,83 @@ export function getConfigDirPruningRule(
 	return last?.type === 'exclude' ? last : undefined
 }
 
+/**
+ * Builds the rules that let individual config files through while everything
+ * else in the config directory stays local.
+ *
+ * The filter engine decides ancestor *directory* nodes first and prunes the
+ * subtree on the first exclusion, so re-including just the leaf is not enough:
+ * every ancestor has to be re-included after the blanket exclusions, in order.
+ * The exclusions therefore come first and the includes (parents before
+ * children) after them, which is exactly "last match wins".
+ */
+export function buildConfigDirExtraFileRules(
+	configDir: string,
+	paths: string[],
+): GlobFilterRule[] {
+	const rule = (expr: string, type: 'include' | 'exclude'): GlobFilterRule => ({
+		expr,
+		options: { caseSensitive: false },
+		type,
+	})
+
+	// Start by hiding the whole config directory, then build a gitignore-style
+	// "unignore" chain per requested file: each ancestor is re-included and its
+	// contents excluded again, so only the requested leaf survives. Includes
+	// match whole subtrees, which is exactly why the extra exclusions are
+	// needed — without them `include .obsidian/plugins` would hand over every
+	// plugin's settings.
+	const rules: GlobFilterRule[] = [
+		rule(configDir, 'exclude'),
+		rule(`${configDir}/**`, 'exclude'),
+	]
+
+	const chains: string[][] = []
+	for (const path of paths) {
+		const segments = normalizeVaultPath(path).split('/')
+		if (segments.length < 2 || segments[0] !== configDir) {
+			continue
+		}
+		chains.push(
+			Array.from({ length: segments.length }, (_, index) =>
+				segments.slice(0, index + 1).join('/'),
+			),
+		)
+	}
+
+	// Depth-first so a shallower file's chain is not interleaved with a deeper
+	// one, then de-duplicated: the same ancestor is often shared.
+	const emitted = new Set<string>()
+	for (let depth = 1; ; depth += 1) {
+		let emittedAny = false
+		for (const chain of chains) {
+			const expr = chain[depth - 1]
+			if (!expr) {
+				continue
+			}
+			emittedAny = true
+			if (emitted.has(expr)) {
+				continue
+			}
+			emitted.add(expr)
+			rules.push(rule(expr, 'include'))
+			if (depth < chain.length) {
+				rules.push(rule(`${expr}/**`, 'exclude'))
+			}
+		}
+		if (!emittedAny) {
+			break
+		}
+	}
+
+	return rules
+}
+
 export function computeEffectiveFilterRulesFromParts(
 	configDir: string,
 	mode: ConfigDirSyncMode,
 	filterRules: ConfigDirFilterRuleInput,
+	extraConfigPaths: string[] = [],
 ): EffectiveFilterRules {
 	const rules: GlobFilterRule[] = [...filterRules.rules]
 
@@ -140,6 +214,13 @@ export function computeEffectiveFilterRulesFromParts(
 		})
 	}
 	// mode === 'all': no additional rules — configDir traversed freely
+
+	// Opted-in individual config files (e.g. one plugin's data.json) come after
+	// the mode rules so they can win over the blanket exclusion, but before the
+	// system rules, which always win.
+	if (mode !== 'all' && extraConfigPaths.length > 0) {
+		rules.push(...buildConfigDirExtraFileRules(configDir, extraConfigPaths))
+	}
 
 	// System hard-exclusions come last so they always win (highest priority).
 	rules.push(...getConfigDirSystemFilterRules(configDir))
@@ -182,5 +263,6 @@ export function computeEffectiveFilterRules(
 		configDir,
 		mode,
 		plugin.settings.filterRules,
+		plugin.settings.configDirExtraPaths ?? [],
 	)
 }

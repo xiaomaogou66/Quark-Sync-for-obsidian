@@ -71,6 +71,24 @@ export default class FilterSettings extends BaseSettings {
 					}),
 			)
 
+		new Setting(this.containerEl)
+			.setName(i18n.t('settings.configDirExtraPaths.name'))
+			.setDesc(i18n.t('settings.configDirExtraPaths.desc', { configDir }))
+			.addTextArea((area) => {
+				area
+					.setPlaceholder(`${configDir}/plugins/ical/data.json`)
+					.setValue((this.plugin.settings.configDirExtraPaths ?? []).join('\n'))
+					.onChange(async (value) => {
+						this.plugin.settings.configDirExtraPaths = value
+							.split('\n')
+							.map((line) => line.trim())
+							.filter((line) => line.length > 0)
+						await this.plugin.settingsService.saveSettings()
+					})
+				area.inputEl.rows = 3
+				area.inputEl.addClass('quark-sync-config-dir-extra-paths')
+			})
+
 		// Rules
 		new Setting(this.containerEl)
 			.setName(i18n.t('settings.filters.name'))
