@@ -167,6 +167,13 @@ export interface PluginSettings {
 		}
 	}
 	configDirSyncMode?: 'none' | 'bookmarks' | 'all'
+	/**
+	 * Individual files inside the config directory to sync even when the whole
+	 * config directory stays local (the default). Vault-relative paths, e.g.
+	 * `.obsidian/plugins/ical/data.json`. Lets two devices share one plugin's
+	 * settings without dragging workspace/appearance/hotkeys along.
+	 */
+	configDirExtraPaths?: string[]
 }
 
 export interface SubagentSettings {
@@ -253,6 +260,7 @@ export const DEFAULT_SETTINGS: PluginSettings = {
 		},
 	},
 	configDirSyncMode: 'none',
+	configDirExtraPaths: [],
 }
 
 export interface PluginLocalSettings {

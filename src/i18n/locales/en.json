@@ -500,6 +500,10 @@
 		"taskConcurrency": {
 			"name": "Upload/download concurrency",
 			"desc": "How many consecutive upload or download tasks run at once. Writes are throttled harder than reads by the drive, so the default is 3; drop to 1 if you see 503s or repeated failures. Directory creation, deletions and conflict merges always run in order."
+		},
+		"configDirExtraPaths": {
+			"name": "Extra config files to sync",
+			"desc": "Sync these files even though the rest of {{configDir}} stays local (one vault-relative path per line). Typical use: {{configDir}}/plugins/ical/data.json — share one plugin's settings across devices without dragging workspace, appearance or hotkeys along. Whole-directory sync, workspace / node_modules and this plugin's own credential files stay excluded."
 		}
 	},
 	"aiPermission": {

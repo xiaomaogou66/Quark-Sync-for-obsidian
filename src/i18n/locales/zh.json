@@ -500,6 +500,10 @@
 		"taskConcurrency": {
 			"name": "上传/下载并发数",
 			"desc": "连续的上传、下载任务最多同时执行几个。写入比读取更容易触发网盘限流，默认 3；遇到 503 或频繁失败请调回 1。创建目录、删除、冲突合并等有顺序依赖的任务始终按顺序执行。"
+		},
+		"configDirExtraPaths": {
+			"name": "额外同步的配置文件",
+			"desc": "即使整个 {{configDir}} 保持本机专有，也把这里列出的文件同步到其他设备（每行一个，库内相对路径）。常用：{{configDir}}/plugins/ical/data.json —— 让多台设备共用同一个插件配置，而不必把 workspace、外观、快捷键一起同步过去。整目录同步、workspace / node_modules、以及本插件自己的凭据文件仍然排除在外。"
 		}
 	},
 	"aiPermission": {
