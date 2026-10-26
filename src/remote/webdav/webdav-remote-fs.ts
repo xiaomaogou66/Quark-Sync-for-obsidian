@@ -1,5 +1,6 @@
 import { basename as pathBasename } from 'path-browserify'
 import type { FileStat, WebDAVClient } from 'webdav'
+import logger from '~/utils/logger'
 import { normalizeRemoteMtime } from '~/remote/remote-fs.interface'
 import type {
 	RemoteEntry,
@@ -7,6 +8,13 @@ import type {
 	RemoteFs,
 	WriteRemoteFileOptions,
 } from '~/remote/remote-fs.interface'
+
+function contentSize(data: RemoteFileContent): number {
+	if (typeof data === 'string') {
+		return new TextEncoder().encode(data).byteLength
+	}
+	return data.byteLength
+}
 
 function toEntry(stat: FileStat): RemoteEntry {
 	return {
@@ -82,11 +90,36 @@ export class WebDAVRemoteFs implements RemoteFs {
 		data: RemoteFileContent,
 		_options?: WriteRemoteFileOptions,
 	) {
-		const success = await this.client.putFileContents(path, data, {
-			overwrite: true,
-		})
-		if (!success) {
-			throw new Error('Upload failed')
+		try {
+			const success = await this.client.putFileContents(path, data, {
+				overwrite: true,
+			})
+			if (!success) {
+				throw new Error('Upload failed')
+			}
+		} catch (error) {
+			// Some gateways report a failure although the bytes did land. OpenList,
+			// for instance, uploads to a temp file and renames it into place; when
+			// Quark answers "存在同名文件 / file is doloading" for the rename it turns
+			// that into 405 even though the target already holds the new content.
+			// Reporting failure there is worse than useless: the file gets no sync
+			// record and is retried — and fails again — on every following sync.
+			// Verify by size before giving up.
+			const expectedSize = contentSize(data)
+			const landed = await this.client
+				.stat(path, { details: false })
+				.then((stat) => {
+					const size = (stat as FileStat).size
+					return typeof size === 'number' && size === expectedSize
+				})
+				.catch(() => false)
+			if (!landed) {
+				throw error
+			}
+			logger.warn(
+				`[WebDAV] upload reported an error but ${path} already holds ${expectedSize} bytes; treating it as uploaded`,
+				error,
+			)
 		}
 	}
 
