@@ -2,6 +2,7 @@ import { Buffer } from 'buffer' // Import Buffer for explicit Buffer testing
 import { describe, expect, it } from 'vitest'
 import {
 	LatestTimestampResolution,
+	mustStayParseable,
 	resolveByDiff3Merge,
 	resolveByIntelligentMerge,
 	resolveByLatestTimestamp,
@@ -170,6 +171,49 @@ describe('resolveByLatestTimestamp', () => {
 		if (result.status === LatestTimestampResolution.UseLocal) {
 			expect(result.content).toEqual(Buffer.from('localbinary'))
 		}
+	})
+})
+
+describe('mustStayParseable', () => {
+	it('flags JSON and canvas so diff3 never writes markers into them', () => {
+		expect(mustStayParseable('.obsidian/community-plugins.json')).toBe(true)
+		expect(mustStayParseable('.obsidian/appearance.JSON')).toBe(true)
+		expect(mustStayParseable('画板.canvas')).toBe(true)
+		expect(mustStayParseable('  notes/config.json  ')).toBe(true)
+	})
+
+	it('leaves plain text notes to the diff3 strategy', () => {
+		expect(mustStayParseable('学案Session-S7.md')).toBe(false)
+		expect(mustStayParseable('logo.png')).toBe(false)
+		expect(mustStayParseable('')).toBe(false)
+		expect(mustStayParseable(undefined)).toBe(false)
+	})
+})
+
+describe('JSON conflicts stay parseable', () => {
+	it('双方改同一个键时不给 JSON 写冲突标记', async () => {
+		const base =
+			'{\n  "cssTheme": "Prism",\n  "accentColor": "",\n  "baseFontSize": 24\n}\n'
+		const local =
+			'{\n  "cssTheme": "Prism",\n  "accentColor": "#198B48",\n  "baseFontSize": 28\n}\n'
+		const remote =
+			'{\n  "cssTheme": "Cupertino",\n  "accentColor": "#ff0000",\n  "baseFontSize": 24\n}\n'
+		const result = await resolveByIntelligentMerge({
+			localContentText: local,
+			remoteContentText: remote,
+			baseContentText: base,
+			filePath: '.obsidian/appearance.json',
+			hasBase: true,
+		})
+		expect(result.success).toBe(true)
+		expect(result.mergedText).not.toContain('<<<<<<<')
+		expect(() => JSON.parse(result.mergedText!)).not.toThrow()
+		const merged = JSON.parse(result.mergedText!)
+		// 非冲突键各自保留：本地改的字号 + 远端换的主题都进来
+		expect(merged.baseFontSize).toBe(28)
+		expect(merged.cssTheme).toBe('Cupertino')
+		// 同一个键两端都改（真冲突）：沿用本地优先的既有规则
+		expect(merged.accentColor).toBe('#198B48')
 	})
 })
 

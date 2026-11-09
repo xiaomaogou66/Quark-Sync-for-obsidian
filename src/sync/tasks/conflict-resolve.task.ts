@@ -15,6 +15,7 @@ import { statRemoteItem } from '~/utils/stat-remote-item'
 import {
 	IntelligentMergeParams,
 	IntelligentMergeResult,
+	mustStayParseable,
 	resolveByDiff3Merge,
 	resolveByIntelligentMerge,
 } from '../core/merge-utils'
@@ -77,6 +78,16 @@ export default class ConflictResolveTask extends BaseTask {
 						'NoConflictMerge',
 					)
 				case ConflictStrategy.Diff3:
+					// `diff3` writes `<<<<<<< LOCAL` markers on a real conflict, which
+					// is fine for notes and fatal for JSON: an unparseable settings
+					// file silently disables whatever owns it (in the field both
+					// `community-plugins.json` and `appearance.json` broke that way).
+					if (mustStayParseable(this.localPath)) {
+						this.logger.info(
+							`[ConflictResolve] ${this.localPath} must stay parseable — using the JSON-aware merge instead of diff3`,
+						)
+						return await this.execMerge(resolveByIntelligentMerge, 'JsonAware')
+					}
 					return await this.execMerge(resolveByDiff3Merge, 'Diff3')
 				case ConflictStrategy.LocalPriority:
 					return await this.execLocalPriority()

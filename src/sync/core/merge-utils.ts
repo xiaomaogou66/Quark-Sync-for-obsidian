@@ -105,6 +105,24 @@ function diff3MergeStrings(
 	return result.flat().join('\n')
 }
 
+/**
+ * Files that must stay machine-parseable.
+ *
+ * `diff3` is a text merge: on a real conflict it writes
+ * `<<<<<<< LOCAL / ||||||| BASE / ======= / >>>>>>> REMOTE` into the file.
+ * That is what you want in a note, and fatal in JSON — an unparseable
+ * `community-plugins.json` silently disables every community plugin, and
+ * `appearance.json` / `style-settings` data.json lose the theme the same way.
+ * So structured files never go through the marker-emitting merge.
+ */
+export function mustStayParseable(filePath?: string): boolean {
+	if (!filePath) {
+		return false
+	}
+	const normalized = filePath.trim().toLowerCase()
+	return normalized.endsWith('.json') || normalized.endsWith('.canvas')
+}
+
 export function resolveByDiff3Merge({
 	localContentText,
 	remoteContentText,
