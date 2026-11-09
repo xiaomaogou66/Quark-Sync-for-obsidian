@@ -48,6 +48,19 @@ describe('configDirExtraPaths', () => {
 		).toBe(false)
 	})
 
+	it('never syncs this plugin own settings, even in full config-dir mode', () => {
+		// data.json 里存着本机的 WebDAV 端点与凭据：一旦被另一台设备的副本覆盖，
+		// 这台机器的同步就是 401，且用户看不出原因。
+		const full = compileFilterRules(
+			computeEffectiveFilterRulesFromParts(CONFIG, 'all', { rules: [] }, [])
+				.rules,
+		)
+		expect(isPathIncluded(`${CONFIG}/plugins/quark-sync/data.json`, full)).toBe(
+			false,
+		)
+		expect(isPathIncluded(`${CONFIG}/plugins/ical/data.json`, full)).toBe(true)
+	})
+
 	it('ignores paths outside the config dir and malformed input', () => {
 		const rules = ruleSet(['notes.md', CONFIG, './', '  '])
 		expect(isPathIncluded('notes.md', rules)).toBe(true)

@@ -29,6 +29,11 @@ const CONFIG_DIR_SYSTEM_EXCLUSION_SUFFIXES = [
 	'plugins/**/node_modules',
 	'plugins/**/.git',
 	'plugins/**/.pnpm-store',
+	// This plugin's own settings hold the per-device endpoint and credentials
+	// (`webdav.baseUrl` + `webdav.password`). Syncing them across devices
+	// overwrites them with a value that cannot work here — another device's
+	// gateway address — which surfaces as a bare 401 nobody can explain.
+	'plugins/quark-sync/data.json',
 	'plugins/quark-sync/data.local.json',
 	`${REMOTE_SYNC_CACHE_DIR}/${REMOTE_SYNC_CACHE_FILENAME}`,
 	'workspace',
